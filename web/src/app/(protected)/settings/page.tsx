@@ -3,14 +3,8 @@
 import Link from "next/link";
 
 import { Card } from "@/components/ui/Card";
-import { AdminCreateUserForm } from "@/modules/auth/AdminCreateUserForm";
-import { useSessionQuery } from "@/modules/auth/useSessionQuery";
 
 export default function SettingsPage(): React.JSX.Element {
-  const session = useSessionQuery();
-  const role = session.data?.user?.role;
-  const isAdmin = role === "admin";
-
   return (
     <div className="stack">
       <Card
@@ -19,7 +13,7 @@ export default function SettingsPage(): React.JSX.Element {
       >
         <div className="stack">
           <div className="alert info">
-            Manage API keys and machine-to-machine access in the dedicated security section.
+            Manage machine-to-machine API access in the security area.
           </div>
           <Link href="/security" className="tag">
             Open Security Configuration
@@ -28,16 +22,12 @@ export default function SettingsPage(): React.JSX.Element {
       </Card>
 
       <Card
-        title="User Management"
-        description="Create platform users and assign roles for operations, warehouse, finance, and compliance."
+        title="User Administration"
+        description="Create users and review user accounts from the dedicated Users section."
       >
-        {session.isLoading ? <div className="alert info">Loading user permissions...</div> : null}
-
-        {!session.isLoading && !isAdmin ? (
-          <div className="alert error">Only admins can create user accounts.</div>
-        ) : null}
-
-        {isAdmin ? <AdminCreateUserForm /> : null}
+        <Link href={"/users" as never} className="tag">
+          Open User Management
+        </Link>
       </Card>
     </div>
   );

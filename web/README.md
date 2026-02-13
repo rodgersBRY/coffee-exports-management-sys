@@ -20,6 +20,7 @@ Enterprise frontend for CEOMS API.
 - Access/refresh/CSRF tokens are stored as HTTP-only cookies.
 - `/api/bff/[...path]` injects auth, CSRF, idempotency key, and retries once on 401 via refresh token.
 - Backend URL remains server-side via `CEOMS_API_URL`.
+- Role-based module visibility in sidebar and middleware route guarding hide unauthorized modules from users.
 
 ## Environment
 Copy env file:
@@ -41,7 +42,7 @@ npm run build
 ```
 
 ## API coverage
-- Auth/session + API keys
+- Auth/session + users + API keys
 - Master data
 - Procurement
 - Inventory + dashboard

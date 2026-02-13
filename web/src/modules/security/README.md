@@ -7,4 +7,4 @@
 - `config.ts`: create/list API key panel configuration.
 
 ## Notes
-- API key visibility and creation follow backend role-based authorization.
+- API key visibility and creation are restricted to admin users.

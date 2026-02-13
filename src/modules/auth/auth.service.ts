@@ -36,6 +36,16 @@ type UserRow = {
   is_active: boolean;
 };
 
+type UserListRow = {
+  id: number;
+  email: string;
+  full_name: string;
+  role: UserRole;
+  is_active: boolean;
+  last_login_at: Date | null;
+  created_at: Date;
+};
+
 type SessionRow = {
   id: string;
   user_id: number;
@@ -267,6 +277,60 @@ export class AuthService {
       throw new ApiError(404, "User not found");
     }
     return mapUserPublic(result.rows[0]);
+  }
+
+  async listUsers(actor: AuthContext, listQuery: ListQueryParams): Promise<unknown> {
+    if (actor.role !== "admin") {
+      throw new ApiError(403, "Only admin users can list accounts");
+    }
+
+    const whereClauses: string[] = [];
+    const values: unknown[] = [];
+    const activeFilter = toBooleanFilter(listQuery.filters, "is_active");
+    const roleFilter = listQuery.filters.role;
+    const allowedRoles: UserRole[] = ["admin", "trader", "warehouse", "finance", "compliance"];
+
+    if (activeFilter !== undefined) {
+      values.push(activeFilter);
+      whereClauses.push(`is_active = $${values.length}`);
+    }
+    if (roleFilter) {
+      if (!allowedRoles.includes(roleFilter as UserRole)) {
+        throw new ApiError(400, "filter_role must be one of: admin, trader, warehouse, finance, compliance");
+      }
+      values.push(roleFilter);
+      whereClauses.push(`role = $${values.length}`);
+    }
+    if (listQuery.search) {
+      values.push(`%${escapeLikeQuery(listQuery.search)}%`);
+      whereClauses.push(`(email ILIKE $${values.length} ESCAPE '\\' OR full_name ILIKE $${values.length} ESCAPE '\\')`);
+    }
+
+    const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+    const countResult = await query<{ total: number }>(
+      `SELECT COUNT(*)::int AS total FROM users ${whereSql}`,
+      values,
+    );
+
+    values.push(listQuery.pageSize, listQuery.offset);
+    const result = await query<UserListRow>(
+      `
+      SELECT
+        id,
+        email,
+        full_name,
+        role,
+        is_active,
+        last_login_at,
+        created_at
+      FROM users
+      ${whereSql}
+      ORDER BY ${listQuery.sortBy} ${listQuery.sortOrder}
+      LIMIT $${values.length - 1} OFFSET $${values.length}
+      `,
+      values,
+    );
+    return buildPaginatedResult(result.rows, Number(countResult.rows[0].total), listQuery);
   }
 
   async createApiKey(

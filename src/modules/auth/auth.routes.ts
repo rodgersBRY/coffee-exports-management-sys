@@ -27,15 +27,21 @@ authRouter.post(
   asyncHandler(authController.logout.bind(authController)),
 );
 authRouter.get("/me", authenticate, asyncHandler(authController.me.bind(authController)));
+authRouter.get(
+  "/users",
+  authenticate,
+  authorize("admin"),
+  asyncHandler(authController.listUsers.bind(authController)),
+);
 authRouter.post(
   "/api-keys",
   authenticate,
-  authorize("admin", "trader", "warehouse", "finance", "compliance"),
+  authorize("admin"),
   asyncHandler(authController.createApiKey.bind(authController)),
 );
 authRouter.get(
   "/api-keys",
   authenticate,
-  authorize("admin", "trader", "warehouse", "finance", "compliance"),
+  authorize("admin"),
   asyncHandler(authController.listApiKeys.bind(authController)),
 );

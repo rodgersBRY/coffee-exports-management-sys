@@ -25,8 +25,9 @@ Provides API authentication and authorization controls:
 - `POST /api/v1/auth/refresh`
 - `POST /api/v1/auth/logout`
 - `GET /api/v1/auth/me`
-- `POST /api/v1/auth/api-keys`
-- `GET /api/v1/auth/api-keys`
+- `GET /api/v1/auth/users` (admin)
+- `POST /api/v1/auth/api-keys` (admin)
+- `GET /api/v1/auth/api-keys` (admin)
 
 ## Configuration Notes
 

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useMemo, useState } from "react";
 
+import { canRoleAccessPath } from "@/lib/auth/permissions";
+import type { UserRole } from "@/lib/auth/types";
 import { useToastStore } from "@/lib/state/toast-store";
 
 type NavItem = { href: string; label: string };
@@ -31,6 +33,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: "Administration",
     items: [
+      { href: "/users", label: "Users" },
       { href: "/master", label: "Master Data" },
       { href: "/settings", label: "Settings" },
       { href: "/security", label: "Security" }
@@ -68,7 +71,7 @@ function breadcrumbsForPath(pathname: string): Array<{ href: string; label: stri
 type Props = {
   children: ReactNode;
   userEmail?: string;
-  userRole?: string;
+  userRole?: UserRole;
 };
 
 export function AppShell({ children, userEmail, userRole }: Props): React.JSX.Element {
@@ -78,6 +81,17 @@ export function AppShell({ children, userEmail, userRole }: Props): React.JSX.El
   const [loggingOut, setLoggingOut] = useState(false);
 
   const crumbs = useMemo(() => breadcrumbsForPath(pathname), [pathname]);
+  const visibleNavGroups = useMemo(() => {
+    if (!userRole) {
+      return [];
+    }
+    return NAV_GROUPS
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => canRoleAccessPath(userRole, item.href)),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [userRole]);
 
   async function handleLogout(): Promise<void> {
     setLoggingOut(true);
@@ -109,7 +123,7 @@ export function AppShell({ children, userEmail, userRole }: Props): React.JSX.El
           </div>
 
           <nav className="sidebar-nav" aria-label="Primary">
-            {NAV_GROUPS.map((group) => (
+            {visibleNavGroups.map((group) => (
               <details key={group.title} open className="nav-group">
                 <summary>{group.title}</summary>
                 <div className="nav-links">

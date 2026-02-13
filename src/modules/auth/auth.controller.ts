@@ -66,6 +66,18 @@ export class AuthController {
     res.json(user);
   }
 
+  async listUsers(req: Request, res: Response): Promise<void> {
+    if (!req.auth) {
+      throw new ApiError(401, "Authentication required");
+    }
+    const query = parseListQuery(req.query as Record<string, unknown>, {
+      allowedSortBy: ["created_at", "last_login_at", "email", "full_name", "role", "id", "is_active"],
+      defaultSortBy: "created_at",
+    });
+    const users = await authService.listUsers(req.auth, query);
+    res.json(users);
+  }
+
   async issueCsrf(_req: Request, res: Response): Promise<void> {
     const token = issueCsrfToken(res);
     res.json({ csrf_token: token });

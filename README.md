@@ -216,8 +216,9 @@ npm run prisma:migrate:deploy
 - `POST /api/v1/auth/refresh`
 - `POST /api/v1/auth/logout`
 - `GET /api/v1/auth/me`
-- `POST /api/v1/auth/api-keys`
-- `GET /api/v1/auth/api-keys`
+- `GET /api/v1/auth/users`
+- `POST /api/v1/auth/api-keys` (admin)
+- `GET /api/v1/auth/api-keys` (admin)
 - `POST /api/v1/master/suppliers`
 - `GET /api/v1/master/suppliers`
 - `POST /api/v1/master/buyers`
