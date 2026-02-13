@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum SupplierType {
@@ -58,6 +57,12 @@ enum DocumentType {
   packing_list
   traceability_report
   cost_breakdown_summary
+}
+
+enum IdempotencyStatus {
+  processing
+  completed
+  failed
 }
 
 enum UserRole {
@@ -117,6 +122,26 @@ model ApiKey {
 
   @@index([userId], map: "idx_api_keys_user")
   @@map("api_keys")
+}
+
+model IdempotencyKey {
+  id                  String            @id @db.Uuid
+  idempotencyKey      String            @map("idempotency_key")
+  actorScope          String            @map("actor_scope")
+  requestMethod       String            @map("request_method")
+  requestPath         String            @map("request_path")
+  requestFingerprint  String            @map("request_fingerprint")
+  status              IdempotencyStatus @default(processing)
+  responseStatus      Int?              @map("response_status")
+  responseBody        Json?             @map("response_body")
+  responseContentType String?           @map("response_content_type")
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
+  expiresAt           DateTime          @map("expires_at")
+
+  @@unique([idempotencyKey, actorScope], map: "uniq_idempotency_key_actor")
+  @@index([expiresAt], map: "idx_idempotency_expires")
+  @@map("idempotency_keys")
 }
 
 model Supplier {

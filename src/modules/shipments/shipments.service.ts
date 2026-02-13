@@ -6,6 +6,10 @@ import {
   refreshLotStatus,
   toNumber,
 } from "../../common/dbHelpers.js";
+import {
+  ListQueryParams,
+  buildPaginatedResult,
+} from "../../common/pagination.js";
 import { query, withTransaction } from "../../db/pool.js";
 import {
   DocsGenerateInput,
@@ -285,12 +289,32 @@ export class ShipmentsService {
     });
   }
 
-  async listDocuments(shipmentId: number): Promise<unknown[]> {
-    const result = await query(
-      "SELECT * FROM shipment_documents WHERE shipment_id = $1 ORDER BY id DESC",
-      [shipmentId],
+  async listDocuments(shipmentId: number, listQuery: ListQueryParams): Promise<unknown> {
+    const whereClauses = ["shipment_id = $1"];
+    const values: unknown[] = [shipmentId];
+
+    if (listQuery.filters.document_type) {
+      values.push(listQuery.filters.document_type);
+      whereClauses.push(`document_type = $${values.length}`);
+    }
+
+    const whereSql = `WHERE ${whereClauses.join(" AND ")}`;
+    const countResult = await query<{ total: number }>(
+      `SELECT COUNT(*)::int AS total FROM shipment_documents ${whereSql}`,
+      values,
     );
-    return result.rows;
+
+    values.push(listQuery.pageSize, listQuery.offset);
+    const result = await query(
+      `
+      SELECT * FROM shipment_documents
+      ${whereSql}
+      ORDER BY ${listQuery.sortBy} ${listQuery.sortOrder}
+      LIMIT $${values.length - 1} OFFSET $${values.length}
+      `,
+      values,
+    );
+    return buildPaginatedResult(result.rows, Number(countResult.rows[0].total), listQuery);
   }
 }
 

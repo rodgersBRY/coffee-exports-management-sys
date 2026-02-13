@@ -13,6 +13,8 @@ const corsAllowedOrigins = (process.env.CORS_ALLOWED_ORIGINS ?? "")
 const rateLimitWindowMs = Number(process.env.RATE_LIMIT_WINDOW_MS ?? 60000);
 const rateLimitMax = Number(process.env.RATE_LIMIT_MAX ?? 120);
 const authRateLimitMax = Number(process.env.AUTH_RATE_LIMIT_MAX ?? 15);
+const idempotencyRequireKey = process.env.IDEMPOTENCY_REQUIRE_KEY !== "false";
+const idempotencyTtlSeconds = Number(process.env.IDEMPOTENCY_TTL_SECONDS ?? 86400);
 const jwtAccessSecret = process.env.JWT_ACCESS_SECRET;
 const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET;
 const jwtAccessTtl = process.env.JWT_ACCESS_TTL ?? "15m";
@@ -58,6 +60,9 @@ if (Number.isNaN(port) || port <= 0) {
 if (Number.isNaN(rateLimitWindowMs) || Number.isNaN(rateLimitMax) || Number.isNaN(authRateLimitMax)) {
   throw new Error("Rate limit env values must be valid numbers");
 }
+if (Number.isNaN(idempotencyTtlSeconds) || idempotencyTtlSeconds <= 0) {
+  throw new Error("IDEMPOTENCY_TTL_SECONDS must be a positive number");
+}
 
 export const env = {
   port,
@@ -68,6 +73,8 @@ export const env = {
   rateLimitWindowMs,
   rateLimitMax,
   authRateLimitMax,
+  idempotencyRequireKey,
+  idempotencyTtlSeconds,
   jwtAccessSecret,
   jwtRefreshSecret,
   jwtAccessTtl,

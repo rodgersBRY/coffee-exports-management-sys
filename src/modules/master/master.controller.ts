@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 
+import { parseListQuery } from "../../common/pagination.js";
 import { masterService } from "./master.service.js";
 import {
   bagTypeSchema,
@@ -16,8 +17,12 @@ export class MasterController {
     res.status(201).json(created);
   }
 
-  async listSuppliers(_req: Request, res: Response): Promise<void> {
-    const rows = await masterService.listSuppliers();
+  async listSuppliers(req: Request, res: Response): Promise<void> {
+    const query = parseListQuery(req.query as Record<string, unknown>, {
+      allowedSortBy: ["id", "name", "supplier_type", "country", "created_at"],
+      defaultSortBy: "created_at",
+    });
+    const rows = await masterService.listSuppliers(query);
     res.json(rows);
   }
 
@@ -27,8 +32,12 @@ export class MasterController {
     res.status(201).json(created);
   }
 
-  async listBuyers(_req: Request, res: Response): Promise<void> {
-    const rows = await masterService.listBuyers();
+  async listBuyers(req: Request, res: Response): Promise<void> {
+    const query = parseListQuery(req.query as Record<string, unknown>, {
+      allowedSortBy: ["id", "name", "country", "created_at"],
+      defaultSortBy: "created_at",
+    });
+    const rows = await masterService.listBuyers(query);
     res.json(rows);
   }
 
@@ -38,8 +47,12 @@ export class MasterController {
     res.status(201).json(created);
   }
 
-  async listWarehouses(_req: Request, res: Response): Promise<void> {
-    const rows = await masterService.listWarehouses();
+  async listWarehouses(req: Request, res: Response): Promise<void> {
+    const query = parseListQuery(req.query as Record<string, unknown>, {
+      allowedSortBy: ["id", "name", "location", "created_at"],
+      defaultSortBy: "created_at",
+    });
+    const rows = await masterService.listWarehouses(query);
     res.json(rows);
   }
 
@@ -49,8 +62,12 @@ export class MasterController {
     res.status(201).json(created);
   }
 
-  async listGrades(_req: Request, res: Response): Promise<void> {
-    const rows = await masterService.listGrades();
+  async listGrades(req: Request, res: Response): Promise<void> {
+    const query = parseListQuery(req.query as Record<string, unknown>, {
+      allowedSortBy: ["id", "code", "created_at"],
+      defaultSortBy: "created_at",
+    });
+    const rows = await masterService.listGrades(query);
     res.json(rows);
   }
 
@@ -60,8 +77,12 @@ export class MasterController {
     res.status(201).json(created);
   }
 
-  async listBagTypes(_req: Request, res: Response): Promise<void> {
-    const rows = await masterService.listBagTypes();
+  async listBagTypes(req: Request, res: Response): Promise<void> {
+    const query = parseListQuery(req.query as Record<string, unknown>, {
+      allowedSortBy: ["id", "name", "weight_kg", "created_at"],
+      defaultSortBy: "created_at",
+    });
+    const rows = await masterService.listBagTypes(query);
     res.json(rows);
   }
 }

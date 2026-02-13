@@ -1,3 +1,8 @@
+import {
+  ListQueryParams,
+  buildPaginatedResult,
+  escapeLikeQuery,
+} from "../../common/pagination.js";
 import { query } from "../../db/pool.js";
 import {
   BagTypeInput,
@@ -20,9 +25,39 @@ export class MasterService {
     return result.rows[0];
   }
 
-  async listSuppliers(): Promise<unknown[]> {
-    const result = await query("SELECT * FROM suppliers ORDER BY id DESC");
-    return result.rows;
+  async listSuppliers(listQuery: ListQueryParams): Promise<unknown> {
+    const whereClauses: string[] = [];
+    const values: unknown[] = [];
+
+    if (listQuery.search) {
+      values.push(`%${escapeLikeQuery(listQuery.search)}%`);
+      whereClauses.push(`name ILIKE $${values.length} ESCAPE '\\'`);
+    }
+    if (listQuery.filters.type) {
+      values.push(listQuery.filters.type);
+      whereClauses.push(`supplier_type = $${values.length}`);
+    }
+    if (listQuery.filters.country) {
+      values.push(listQuery.filters.country);
+      whereClauses.push(`country = $${values.length}`);
+    }
+
+    const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+    const countResult = await query<{ total: number }>(
+      `SELECT COUNT(*)::int AS total FROM suppliers ${whereSql}`,
+      values,
+    );
+    values.push(listQuery.pageSize, listQuery.offset);
+    const result = await query(
+      `
+      SELECT * FROM suppliers
+      ${whereSql}
+      ORDER BY ${listQuery.sortBy} ${listQuery.sortOrder}
+      LIMIT $${values.length - 1} OFFSET $${values.length}
+      `,
+      values,
+    );
+    return buildPaginatedResult(result.rows, Number(countResult.rows[0].total), listQuery);
   }
 
   async createBuyer(input: BuyerInput): Promise<unknown> {
@@ -37,9 +72,35 @@ export class MasterService {
     return result.rows[0];
   }
 
-  async listBuyers(): Promise<unknown[]> {
-    const result = await query("SELECT * FROM buyers ORDER BY id DESC");
-    return result.rows;
+  async listBuyers(listQuery: ListQueryParams): Promise<unknown> {
+    const whereClauses: string[] = [];
+    const values: unknown[] = [];
+
+    if (listQuery.search) {
+      values.push(`%${escapeLikeQuery(listQuery.search)}%`);
+      whereClauses.push(`name ILIKE $${values.length} ESCAPE '\\'`);
+    }
+    if (listQuery.filters.country) {
+      values.push(listQuery.filters.country);
+      whereClauses.push(`country = $${values.length}`);
+    }
+
+    const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+    const countResult = await query<{ total: number }>(
+      `SELECT COUNT(*)::int AS total FROM buyers ${whereSql}`,
+      values,
+    );
+    values.push(listQuery.pageSize, listQuery.offset);
+    const result = await query(
+      `
+      SELECT * FROM buyers
+      ${whereSql}
+      ORDER BY ${listQuery.sortBy} ${listQuery.sortOrder}
+      LIMIT $${values.length - 1} OFFSET $${values.length}
+      `,
+      values,
+    );
+    return buildPaginatedResult(result.rows, Number(countResult.rows[0].total), listQuery);
   }
 
   async createWarehouse(input: WarehouseInput): Promise<unknown> {
@@ -54,9 +115,35 @@ export class MasterService {
     return result.rows[0];
   }
 
-  async listWarehouses(): Promise<unknown[]> {
-    const result = await query("SELECT * FROM warehouses ORDER BY id DESC");
-    return result.rows;
+  async listWarehouses(listQuery: ListQueryParams): Promise<unknown> {
+    const whereClauses: string[] = [];
+    const values: unknown[] = [];
+
+    if (listQuery.search) {
+      values.push(`%${escapeLikeQuery(listQuery.search)}%`);
+      whereClauses.push(`name ILIKE $${values.length} ESCAPE '\\'`);
+    }
+    if (listQuery.filters.location) {
+      values.push(listQuery.filters.location);
+      whereClauses.push(`location = $${values.length}`);
+    }
+
+    const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+    const countResult = await query<{ total: number }>(
+      `SELECT COUNT(*)::int AS total FROM warehouses ${whereSql}`,
+      values,
+    );
+    values.push(listQuery.pageSize, listQuery.offset);
+    const result = await query(
+      `
+      SELECT * FROM warehouses
+      ${whereSql}
+      ORDER BY ${listQuery.sortBy} ${listQuery.sortOrder}
+      LIMIT $${values.length - 1} OFFSET $${values.length}
+      `,
+      values,
+    );
+    return buildPaginatedResult(result.rows, Number(countResult.rows[0].total), listQuery);
   }
 
   async createGrade(input: GradeInput): Promise<unknown> {
@@ -71,9 +158,35 @@ export class MasterService {
     return result.rows[0];
   }
 
-  async listGrades(): Promise<unknown[]> {
-    const result = await query("SELECT * FROM grades ORDER BY id DESC");
-    return result.rows;
+  async listGrades(listQuery: ListQueryParams): Promise<unknown> {
+    const whereClauses: string[] = [];
+    const values: unknown[] = [];
+
+    if (listQuery.search) {
+      values.push(`%${escapeLikeQuery(listQuery.search)}%`);
+      whereClauses.push(`(code ILIKE $${values.length} ESCAPE '\\' OR description ILIKE $${values.length} ESCAPE '\\')`);
+    }
+    if (listQuery.filters.code) {
+      values.push(listQuery.filters.code);
+      whereClauses.push(`code = $${values.length}`);
+    }
+
+    const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+    const countResult = await query<{ total: number }>(
+      `SELECT COUNT(*)::int AS total FROM grades ${whereSql}`,
+      values,
+    );
+    values.push(listQuery.pageSize, listQuery.offset);
+    const result = await query(
+      `
+      SELECT * FROM grades
+      ${whereSql}
+      ORDER BY ${listQuery.sortBy} ${listQuery.sortOrder}
+      LIMIT $${values.length - 1} OFFSET $${values.length}
+      `,
+      values,
+    );
+    return buildPaginatedResult(result.rows, Number(countResult.rows[0].total), listQuery);
   }
 
   async createBagType(input: BagTypeInput): Promise<unknown> {
@@ -88,9 +201,31 @@ export class MasterService {
     return result.rows[0];
   }
 
-  async listBagTypes(): Promise<unknown[]> {
-    const result = await query("SELECT * FROM bag_types ORDER BY id DESC");
-    return result.rows;
+  async listBagTypes(listQuery: ListQueryParams): Promise<unknown> {
+    const whereClauses: string[] = [];
+    const values: unknown[] = [];
+
+    if (listQuery.search) {
+      values.push(`%${escapeLikeQuery(listQuery.search)}%`);
+      whereClauses.push(`name ILIKE $${values.length} ESCAPE '\\'`);
+    }
+
+    const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+    const countResult = await query<{ total: number }>(
+      `SELECT COUNT(*)::int AS total FROM bag_types ${whereSql}`,
+      values,
+    );
+    values.push(listQuery.pageSize, listQuery.offset);
+    const result = await query(
+      `
+      SELECT * FROM bag_types
+      ${whereSql}
+      ORDER BY ${listQuery.sortBy} ${listQuery.sortOrder}
+      LIMIT $${values.length - 1} OFFSET $${values.length}
+      `,
+      values,
+    );
+    return buildPaginatedResult(result.rows, Number(countResult.rows[0].total), listQuery);
   }
 }
 

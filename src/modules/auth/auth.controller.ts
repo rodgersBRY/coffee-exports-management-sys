@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 
 import { ApiError } from "../../common/errors/ApiError.js";
+import { parseListQuery } from "../../common/pagination.js";
 import { issueCsrfToken } from "../../common/security/csrf.js";
 import { authService } from "./auth.service.js";
 import {
@@ -83,7 +84,11 @@ export class AuthController {
     if (!req.auth) {
       throw new ApiError(401, "Authentication required");
     }
-    const keys = await authService.listApiKeys(req.auth);
+    const query = parseListQuery(req.query as Record<string, unknown>, {
+      allowedSortBy: ["created_at", "last_used_at", "expires_at", "name", "id"],
+      defaultSortBy: "created_at",
+    });
+    const keys = await authService.listApiKeys(req.auth, query);
     res.json(keys);
   }
 }

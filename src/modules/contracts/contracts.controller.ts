@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 
 import { ApiError } from "../../common/errors/ApiError.js";
+import { parseListQuery } from "../../common/pagination.js";
 import { contractsService } from "./contracts.service.js";
 import { allocationSchema, contractSchema } from "./contracts.validation.js";
 
@@ -21,8 +22,22 @@ export class ContractsController {
     res.status(201).json(allocation);
   }
 
-  async getDashboard(_req: Request, res: Response): Promise<void> {
-    const dashboard = await contractsService.getDashboard();
+  async getDashboard(req: Request, res: Response): Promise<void> {
+    const query = parseListQuery(req.query as Record<string, unknown>, {
+      allowedSortBy: [
+        "id",
+        "contract_number",
+        "status",
+        "quantity_kg",
+        "allocated_kg",
+        "shipped_kg",
+        "shipment_window_start",
+        "shipment_window_end",
+        "created_at",
+      ],
+      defaultSortBy: "created_at",
+    });
+    const dashboard = await contractsService.getDashboard(query);
     res.json(dashboard);
   }
 }

@@ -5,6 +5,12 @@ import {
   refreshLotStatus,
   toNumber,
 } from "../../common/dbHelpers.js";
+import {
+  ListQueryParams,
+  buildPaginatedResult,
+  escapeLikeQuery,
+  toIntFilter,
+} from "../../common/pagination.js";
 import { query, withTransaction } from "../../db/pool.js";
 import { AllocationInput, ContractInput } from "./contracts.validation.js";
 
@@ -90,8 +96,48 @@ export class ContractsService {
     });
   }
 
-  async getDashboard(): Promise<unknown> {
-    const result = await query("SELECT * FROM contracts ORDER BY id DESC");
+  async getDashboard(listQuery: ListQueryParams): Promise<unknown> {
+    const whereClauses: string[] = [];
+    const values: unknown[] = [];
+    const buyerId = toIntFilter(listQuery.filters, "buyer_id");
+
+    if (listQuery.search) {
+      values.push(`%${escapeLikeQuery(listQuery.search)}%`);
+      whereClauses.push(`contract_number ILIKE $${values.length} ESCAPE '\\'`);
+    }
+    if (listQuery.filters.status) {
+      values.push(listQuery.filters.status);
+      whereClauses.push(`status = $${values.length}`);
+    }
+    if (buyerId) {
+      values.push(buyerId);
+      whereClauses.push(`buyer_id = $${values.length}`);
+    }
+    if (listQuery.filters.shipment_window_from) {
+      values.push(listQuery.filters.shipment_window_from);
+      whereClauses.push(`shipment_window_start >= $${values.length}::date`);
+    }
+    if (listQuery.filters.shipment_window_to) {
+      values.push(listQuery.filters.shipment_window_to);
+      whereClauses.push(`shipment_window_end <= $${values.length}::date`);
+    }
+
+    const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+    const countResult = await query<{ total: number }>(
+      `SELECT COUNT(*)::int AS total FROM contracts ${whereSql}`,
+      values,
+    );
+    values.push(listQuery.pageSize, listQuery.offset);
+    const result = await query(
+      `
+      SELECT *
+      FROM contracts
+      ${whereSql}
+      ORDER BY ${listQuery.sortBy} ${listQuery.sortOrder}
+      LIMIT $${values.length - 1} OFFSET $${values.length}
+      `,
+      values,
+    );
     const today = new Date();
     const openContracts = [];
     const riskAlerts = [];
@@ -125,8 +171,14 @@ export class ContractsService {
       }
     }
 
+    const paginated = buildPaginatedResult(
+      openContracts,
+      Number(countResult.rows[0].total),
+      listQuery,
+    );
     return {
-      open_contracts: openContracts,
+      data: paginated.data,
+      meta: paginated.meta,
       risk_alerts: riskAlerts,
     };
   }

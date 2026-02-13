@@ -1,5 +1,11 @@
 import { ApiError } from "../../common/errors/ApiError.js";
 import { ensureReference } from "../../common/dbHelpers.js";
+import {
+  ListQueryParams,
+  buildPaginatedResult,
+  escapeLikeQuery,
+  toIntFilter,
+} from "../../common/pagination.js";
 import { query, withTransaction } from "../../db/pool.js";
 import {
   AuctionLotInput,
@@ -158,9 +164,44 @@ export class ProcurementService {
     });
   }
 
-  async listDirectAgreements(): Promise<unknown[]> {
-    const result = await query("SELECT * FROM direct_agreements ORDER BY id DESC");
-    return result.rows;
+  async listDirectAgreements(listQuery: ListQueryParams): Promise<unknown> {
+    const whereClauses: string[] = [];
+    const values: unknown[] = [];
+    const supplierId = toIntFilter(listQuery.filters, "supplier_id");
+
+    if (listQuery.search) {
+      values.push(`%${escapeLikeQuery(listQuery.search)}%`);
+      whereClauses.push(`agreement_reference ILIKE $${values.length} ESCAPE '\\'`);
+    }
+    if (supplierId) {
+      values.push(supplierId);
+      whereClauses.push(`supplier_id = $${values.length}`);
+    }
+    if (listQuery.filters.crop_year) {
+      values.push(listQuery.filters.crop_year);
+      whereClauses.push(`crop_year = $${values.length}`);
+    }
+    if (listQuery.filters.currency) {
+      values.push(listQuery.filters.currency.toUpperCase());
+      whereClauses.push(`currency = $${values.length}`);
+    }
+
+    const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+    const countResult = await query<{ total: number }>(
+      `SELECT COUNT(*)::int AS total FROM direct_agreements ${whereSql}`,
+      values,
+    );
+    values.push(listQuery.pageSize, listQuery.offset);
+    const result = await query(
+      `
+      SELECT * FROM direct_agreements
+      ${whereSql}
+      ORDER BY ${listQuery.sortBy} ${listQuery.sortOrder}
+      LIMIT $${values.length - 1} OFFSET $${values.length}
+      `,
+      values,
+    );
+    return buildPaginatedResult(result.rows, Number(countResult.rows[0].total), listQuery);
   }
 }
 

@@ -1,11 +1,25 @@
 import { Request, Response } from "express";
 
+import { parseListQuery } from "../../common/pagination.js";
 import { inventoryService } from "./inventory.service.js";
 import { stockAdjustmentSchema } from "./inventory.validation.js";
 
 export class InventoryController {
-  async listLots(_req: Request, res: Response): Promise<void> {
-    const lots = await inventoryService.listLots();
+  async listLots(req: Request, res: Response): Promise<void> {
+    const query = parseListQuery(req.query as Record<string, unknown>, {
+      allowedSortBy: [
+        "id",
+        "lot_code",
+        "source",
+        "status",
+        "crop_year",
+        "weight_total_kg",
+        "weight_available_kg",
+        "created_at",
+      ],
+      defaultSortBy: "created_at",
+    });
+    const lots = await inventoryService.listLots(query);
     res.json(lots);
   }
 

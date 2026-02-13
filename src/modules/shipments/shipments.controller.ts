@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 
 import { ApiError } from "../../common/errors/ApiError.js";
+import { parseListQuery } from "../../common/pagination.js";
 import { shipmentsService } from "./shipments.service.js";
 import {
   docsGenerateSchema,
@@ -40,7 +41,11 @@ export class ShipmentsController {
     if (!Number.isFinite(shipmentId) || shipmentId <= 0) {
       throw new ApiError(400, "Invalid shipmentId");
     }
-    const docs = await shipmentsService.listDocuments(shipmentId);
+    const query = parseListQuery(req.query as Record<string, unknown>, {
+      allowedSortBy: ["id", "document_type", "created_at"],
+      defaultSortBy: "created_at",
+    });
+    const docs = await shipmentsService.listDocuments(shipmentId, query);
     res.json(docs);
   }
 }

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 
+import { parseListQuery } from "../../common/pagination.js";
 import { procurementService } from "./procurement.service.js";
 import {
   auctionLotSchema,
@@ -20,8 +21,12 @@ export class ProcurementController {
     res.status(201).json(agreement);
   }
 
-  async listDirectAgreements(_req: Request, res: Response): Promise<void> {
-    const agreements = await procurementService.listDirectAgreements();
+  async listDirectAgreements(req: Request, res: Response): Promise<void> {
+    const query = parseListQuery(req.query as Record<string, unknown>, {
+      allowedSortBy: ["id", "agreement_reference", "supplier_id", "crop_year", "created_at"],
+      defaultSortBy: "created_at",
+    });
+    const agreements = await procurementService.listDirectAgreements(query);
     res.json(agreements);
   }
 

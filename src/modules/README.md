@@ -17,3 +17,15 @@ Current modules:
 - `shipments`
 - `finance`
 - `traceability`
+
+Shared API standards across modules:
+
+- Mutating endpoints require `Idempotency-Key`.
+- List endpoints use:
+  - `page`
+  - `page_size`
+  - `sort_by`
+  - `sort_order`
+  - `search`
+  - `filter_<field>`
+- List responses return `{ data, meta }`.

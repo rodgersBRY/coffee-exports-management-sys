@@ -1,10 +1,61 @@
 import { ApiError } from "../../common/errors/ApiError.js";
 import { EPSILON, refreshLotStatus, toNumber } from "../../common/dbHelpers.js";
+import {
+  ListQueryParams,
+  buildPaginatedResult,
+  escapeLikeQuery,
+  toIntFilter,
+} from "../../common/pagination.js";
 import { query, withTransaction } from "../../db/pool.js";
 import { StockAdjustmentInput } from "./inventory.validation.js";
 
 export class InventoryService {
-  async listLots(): Promise<unknown[]> {
+  async listLots(listQuery: ListQueryParams): Promise<unknown> {
+    const whereClauses: string[] = [];
+    const values: unknown[] = [];
+    const gradeId = toIntFilter(listQuery.filters, "grade_id");
+    const warehouseId = toIntFilter(listQuery.filters, "warehouse_id");
+    const supplierId = toIntFilter(listQuery.filters, "supplier_id");
+
+    if (listQuery.search) {
+      values.push(`%${escapeLikeQuery(listQuery.search)}%`);
+      whereClauses.push(`(l.lot_code ILIKE $${values.length} ESCAPE '\\' OR l.source_reference ILIKE $${values.length} ESCAPE '\\')`);
+    }
+    if (listQuery.filters.source) {
+      values.push(listQuery.filters.source);
+      whereClauses.push(`l.source = $${values.length}`);
+    }
+    if (listQuery.filters.status) {
+      values.push(listQuery.filters.status);
+      whereClauses.push(`l.status = $${values.length}`);
+    }
+    if (gradeId) {
+      values.push(gradeId);
+      whereClauses.push(`l.grade_id = $${values.length}`);
+    }
+    if (warehouseId) {
+      values.push(warehouseId);
+      whereClauses.push(`l.warehouse_id = $${values.length}`);
+    }
+    if (supplierId) {
+      values.push(supplierId);
+      whereClauses.push(`l.supplier_id = $${values.length}`);
+    }
+    if (listQuery.filters.crop_year) {
+      values.push(listQuery.filters.crop_year);
+      whereClauses.push(`l.crop_year = $${values.length}`);
+    }
+
+    const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+    const countResult = await query<{ total: number }>(
+      `
+      SELECT COUNT(*)::int AS total
+      FROM lots l
+      ${whereSql}
+      `,
+      values,
+    );
+    values.push(listQuery.pageSize, listQuery.offset);
     const result = await query(
       `
       SELECT
@@ -16,10 +67,13 @@ export class InventoryService {
       JOIN grades g ON g.id = l.grade_id
       JOIN suppliers s ON s.id = l.supplier_id
       JOIN warehouses w ON w.id = l.warehouse_id
-      ORDER BY l.id DESC;
+      ${whereSql}
+      ORDER BY l.${listQuery.sortBy} ${listQuery.sortOrder}
+      LIMIT $${values.length - 1} OFFSET $${values.length};
       `,
+      values,
     );
-    return result.rows;
+    return buildPaginatedResult(result.rows, Number(countResult.rows[0].total), listQuery);
   }
 
   async adjustStock(input: StockAdjustmentInput): Promise<unknown> {

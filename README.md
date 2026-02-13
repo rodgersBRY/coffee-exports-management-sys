@@ -49,6 +49,7 @@ Each module has its own `README.md` under `src/modules/<module>/README.md`.
   - recursive request sanitization middleware
   - parameterized SQL queries and safe identifier checks
   - CSRF protection for browser-origin mutating requests
+  - idempotency protection for mutating requests (`Idempotency-Key`)
   - API versioning under `/api/v1`
 
 ## What is implemented
@@ -131,6 +132,47 @@ Versioned endpoints are served under `/api/v1/*`.
 4. Browser-origin mutating requests (`POST/PUT/PATCH/DELETE`):
 - Include header `x-csrf-token: <csrf_token>`.
 - Ensure cookie `ceoms_csrf` is sent.
+
+## Idempotency Contract
+
+- All mutating endpoints (`POST`, `PUT`, `PATCH`, `DELETE`) require:
+  - `Idempotency-Key: <unique-key>`
+- Behavior:
+  - Same key + same request payload returns stored response (`idempotency-replayed: true`).
+  - Same key + different payload returns `409`.
+  - Concurrent duplicate request with same key returns `409` while first request is processing.
+
+## Pagination and Filter Contract
+
+Standard query params for list endpoints:
+
+- `page` (default `1`)
+- `page_size` (default `20`, max `100`)
+- `sort_by` (endpoint-specific allowlist)
+- `sort_order` (`asc` or `desc`, default `desc`)
+- `search` (text search where supported)
+- `filter_<field>` for exact filters
+  - examples: `filter_status=allocated`, `filter_supplier_id=12`
+
+Standard list response shape:
+
+```json
+{
+  "data": [],
+  "meta": {
+    "page": 1,
+    "page_size": 20,
+    "total": 0,
+    "total_pages": 1,
+    "has_next": false,
+    "has_prev": false,
+    "sort_by": "created_at",
+    "sort_order": "desc",
+    "search": "optional",
+    "filters": {}
+  }
+}
+```
 
 ## Prisma workflow
 

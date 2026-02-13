@@ -3,6 +3,13 @@ import crypto from "node:crypto";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
 import { ApiError } from "../../common/errors/ApiError.js";
+import {
+  ListQueryParams,
+  buildPaginatedResult,
+  escapeLikeQuery,
+  toBooleanFilter,
+  toIntFilter,
+} from "../../common/pagination.js";
 import { query, withTransaction } from "../../db/pool.js";
 import { AuthContext, UserRole } from "../../types/auth.js";
 import { hashPassword, verifyPasswordHash } from "../../common/security/password.js";
@@ -305,7 +312,40 @@ export class AuthService {
     };
   }
 
-  async listApiKeys(actor: AuthContext): Promise<unknown[]> {
+  async listApiKeys(actor: AuthContext, listQuery: ListQueryParams): Promise<unknown> {
+    const whereClauses: string[] = [];
+    const values: unknown[] = [];
+    const filteredUserId = toIntFilter(listQuery.filters, "user_id");
+    const filteredActive = toBooleanFilter(listQuery.filters, "is_active");
+
+    if (actor.role !== "admin" && filteredUserId && filteredUserId !== actor.userId) {
+      throw new ApiError(403, "Non-admin users cannot query API keys for another user");
+    }
+    if (actor.role === "admin") {
+      if (filteredUserId) {
+        values.push(filteredUserId);
+        whereClauses.push(`user_id = $${values.length}`);
+      }
+    } else {
+      values.push(actor.userId);
+      whereClauses.push(`user_id = $${values.length}`);
+    }
+    if (filteredActive !== undefined) {
+      values.push(filteredActive);
+      whereClauses.push(`is_active = $${values.length}`);
+    }
+    if (listQuery.search) {
+      values.push(`%${escapeLikeQuery(listQuery.search)}%`);
+      whereClauses.push(`name ILIKE $${values.length} ESCAPE '\\'`);
+    }
+
+    const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+    const countResult = await query<{ total: number }>(
+      `SELECT COUNT(*)::int AS total FROM api_keys ${whereSql}`,
+      values,
+    );
+
+    values.push(listQuery.pageSize, listQuery.offset);
     const result = await query(
       `
       SELECT
@@ -319,12 +359,13 @@ export class AuthService {
         created_at,
         revoked_at
       FROM api_keys
-      WHERE user_id = $1 OR $2 = 'admin'
-      ORDER BY created_at DESC
+      ${whereSql}
+      ORDER BY ${listQuery.sortBy} ${listQuery.sortOrder}
+      LIMIT $${values.length - 1} OFFSET $${values.length}
       `,
-      [actor.userId, actor.role],
+      values,
     );
-    return result.rows;
+    return buildPaginatedResult(result.rows, Number(countResult.rows[0].total), listQuery);
   }
 }
 
