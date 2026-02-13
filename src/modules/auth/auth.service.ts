@@ -139,7 +139,7 @@ export class AuthService {
       role: user.role,
       sessionId,
     });
-    
+
     const refreshTokenHash = hashSha256(refreshToken);
     const expiresAt = getExpiryDateFromJwt(refreshToken);
 
@@ -324,6 +324,7 @@ export class AuthService {
     if (actor.role !== "admin" && filteredUserId && filteredUserId !== actor.userId) {
       throw new ApiError(403, "Non-admin users cannot query API keys for another user");
     }
+    
     if (actor.role === "admin") {
       if (filteredUserId) {
         values.push(filteredUserId);
