@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 
 import { ApiError } from "../errors/ApiError.js";
+import { logger } from "../logger.js";
 
 type PgError = {
   code?: string;
@@ -40,8 +41,12 @@ export function errorHandler(
     });
   }
 
-  console.error(error);
+  logger.error("Unhandled error", {
+    error,
+    requestId: _req.requestId,
+  });
   return res.status(500).json({
     message: "Internal server error",
+    request_id: _req.requestId ?? null,
   });
 }

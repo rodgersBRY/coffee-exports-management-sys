@@ -13,9 +13,9 @@ Maintains lot-level stock state and visibility.
 
 ## Endpoints
 
-- `GET /inventory/lots`
-- `POST /inventory/adjustments`
-- `GET /inventory/dashboard`
+- `GET /api/v1/inventory/lots`
+- `POST /api/v1/inventory/adjustments`
+- `GET /api/v1/inventory/dashboard`
 
 ## Configuration Notes
 

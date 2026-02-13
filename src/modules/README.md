@@ -9,6 +9,7 @@ Each module follows the same layering pattern:
 
 Current modules:
 
+- `auth`
 - `master`
 - `procurement`
 - `inventory`

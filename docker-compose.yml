@@ -4,9 +4,9 @@ services:
     container_name: ceoms-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ceoms
-      POSTGRES_PASSWORD: ceoms
-      POSTGRES_DB: ceoms
+      POSTGRES_USER: ${POSTGRES_USER:-ceoms_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-CHANGE_ME_STRONG_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-ceoms}
     ports:
       - "5432:5432"
     volumes:

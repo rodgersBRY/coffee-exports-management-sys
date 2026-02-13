@@ -13,10 +13,10 @@ Converts allocations into shipments, enforces shipment lifecycle rules, and gene
 
 ## Endpoints
 
-- `POST /shipments`
-- `PATCH /shipments/:shipmentId/status`
-- `POST /shipments/:shipmentId/documents/generate`
-- `GET /shipments/:shipmentId/documents`
+- `POST /api/v1/shipments`
+- `PATCH /api/v1/shipments/:shipmentId/status`
+- `POST /api/v1/shipments/:shipmentId/documents/generate`
+- `GET /api/v1/shipments/:shipmentId/documents`
 
 ## Configuration Notes
 

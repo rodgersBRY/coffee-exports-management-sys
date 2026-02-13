@@ -38,6 +38,9 @@ export async function ensureReference(
   id: number,
   label: string,
 ): Promise<void> {
+  if (!/^[a-z_]+$/.test(table)) {
+    throw new ApiError(500, `Unsafe SQL identifier for table: ${table}`);
+  }
   const result = await client.query(`SELECT id FROM ${table} WHERE id = $1`, [id]);
   if (result.rowCount === 0) {
     throw new ApiError(404, `${label} ${id} not found`);

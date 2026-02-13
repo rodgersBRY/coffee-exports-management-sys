@@ -9,6 +9,7 @@
 - Centralize DB connectivity from environment configuration
 - Provide reusable transaction helper (`withTransaction`)
 - Avoid duplicated connection logic in modules
+- Enforce configurable TLS for database transport in production
 
 ## Notes
 

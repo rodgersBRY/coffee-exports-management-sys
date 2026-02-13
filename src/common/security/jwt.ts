@@ -1,4 +1,4 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 
 import { env } from "../../config/env.js";
 import { ApiError } from "../errors/ApiError.js";
@@ -25,6 +25,11 @@ export function signAccessToken(payload: {
   role: string;
   sessionId: string;
 }): string {
+  const options: SignOptions = {
+    expiresIn: env.jwtAccessTtl as SignOptions["expiresIn"],
+    issuer: "ceoms-api",
+    audience: "ceoms-clients",
+  };
   return jwt.sign(
     {
       sub: String(payload.userId),
@@ -33,11 +38,7 @@ export function signAccessToken(payload: {
       sessionId: payload.sessionId,
     } satisfies AccessTokenClaims,
     env.jwtAccessSecret,
-    {
-      expiresIn: env.jwtAccessTtl,
-      issuer: "ceoms-api",
-      audience: "ceoms-clients",
-    },
+    options,
   );
 }
 
@@ -46,6 +47,11 @@ export function signRefreshToken(payload: {
   role: string;
   sessionId: string;
 }): string {
+  const options: SignOptions = {
+    expiresIn: env.jwtRefreshTtl as SignOptions["expiresIn"],
+    issuer: "ceoms-api",
+    audience: "ceoms-clients",
+  };
   return jwt.sign(
     {
       sub: String(payload.userId),
@@ -54,11 +60,7 @@ export function signRefreshToken(payload: {
       sessionId: payload.sessionId,
     } satisfies RefreshTokenClaims,
     env.jwtRefreshSecret,
-    {
-      expiresIn: env.jwtRefreshTtl,
-      issuer: "ceoms-api",
-      audience: "ceoms-clients",
-    },
+    options,
   );
 }
 

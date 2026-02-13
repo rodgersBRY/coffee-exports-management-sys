@@ -13,8 +13,8 @@ Captures cost entries and computes contract-level profitability.
 
 ## Endpoints
 
-- `POST /costs/entries`
-- `GET /profitability/contracts/:contractId`
+- `POST /api/v1/costs/entries`
+- `GET /api/v1/profitability/contracts/:contractId`
 
 ## Configuration Notes
 

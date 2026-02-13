@@ -11,6 +11,7 @@
 - Expose health endpoint (`/health`)
 - Mount domain routers
 - Register global error middleware
+- Apply security middleware stack (helmet, cors, rate-limit, csrf, sanitization, request ids)
 
 ## Design Rules
 

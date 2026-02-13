@@ -19,16 +19,16 @@ Owns core reference data used by all transactional modules:
 
 ## Endpoints
 
-- `POST /master/suppliers`
-- `GET /master/suppliers`
-- `POST /master/buyers`
-- `GET /master/buyers`
-- `POST /master/warehouses`
-- `GET /master/warehouses`
-- `POST /master/grades`
-- `GET /master/grades`
-- `POST /master/bag-types`
-- `GET /master/bag-types`
+- `POST /api/v1/master/suppliers`
+- `GET /api/v1/master/suppliers`
+- `POST /api/v1/master/buyers`
+- `GET /api/v1/master/buyers`
+- `POST /api/v1/master/warehouses`
+- `GET /api/v1/master/warehouses`
+- `POST /api/v1/master/grades`
+- `GET /api/v1/master/grades`
+- `POST /api/v1/master/bag-types`
+- `GET /api/v1/master/bag-types`
 
 ## Configuration Notes
 

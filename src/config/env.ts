@@ -23,7 +23,13 @@ const dbSslMode = process.env.DB_SSL_MODE ?? (nodeEnv === "production" ? "requir
 const dbSslRejectUnauthorized = process.env.DB_SSL_REJECT_UNAUTHORIZED !== "false";
 const dbSslCaPath = process.env.DB_SSL_CA_PATH;
 const logLevel = process.env.LOG_LEVEL ?? "info";
-const trustProxy = process.env.TRUST_PROXY ?? "true";
+const trustProxyRaw = process.env.TRUST_PROXY ?? "true";
+const trustProxy =
+  trustProxyRaw === "true"
+    ? true
+    : trustProxyRaw === "false"
+      ? false
+      : trustProxyRaw;
 
 if (!databaseUrl) {
   throw new Error("DATABASE_URL is required");

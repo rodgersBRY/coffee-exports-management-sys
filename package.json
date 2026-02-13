@@ -9,7 +9,7 @@
     "start": "node dist/server.js",
     "check": "tsc --noEmit",
     "prisma:generate": "prisma generate",
-    "prisma:migrate:dev": "prisma migrate dev --name init",
+    "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {

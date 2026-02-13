@@ -8,6 +8,7 @@ Phase 1 backend scaffold for a lot-native coffee export operations system.
 - Database: PostgreSQL
 - Schema management: Prisma (`prisma/schema.prisma`)
 - Runtime DB access: `pg` with transaction-safe service logic
+- Security: JWT + API keys + Argon2 + Helmet + CORS + rate limiting + CSRF + request logging
 
 ## Architecture
 
@@ -24,6 +25,31 @@ Codebase is organized for enterprise maintainability with separated layers:
   - `*.validation.ts` (where needed)
 
 Each module has its own `README.md` under `src/modules/<module>/README.md`.
+
+## Security Controls Implemented
+
+- Authentication and authorization:
+  - JWT access/refresh authentication
+  - DB-backed session management with refresh token rotation
+  - API key authentication (`x-api-key`)
+  - Role-based authorization (`admin`, `trader`, `warehouse`, `finance`, `compliance`)
+- Security middleware:
+  - `helmet` security headers
+  - strict CORS allowlist
+  - global and auth-specific rate limiters
+  - JSON and URL-encoded request size limits
+  - request logging through `winston` + `morgan`
+  - request ID propagation (`x-request-id`)
+- Data security:
+  - Argon2id password hashing
+  - encrypted sensitive session metadata (IP/user-agent)
+  - TLS-capable DB config with production SSL enforcement
+  - no plaintext API key storage (SHA-256 hashes only)
+- API security:
+  - recursive request sanitization middleware
+  - parameterized SQL queries and safe identifier checks
+  - CSRF protection for browser-origin mutating requests
+  - API versioning under `/api/v1`
 
 ## What is implemented
 
@@ -62,6 +88,8 @@ Each module has its own `README.md` under `src/modules/<module>/README.md`.
 cp .env.example .env
 ```
 
+Update secret placeholders in `.env` before running.
+
 2. Start Postgres:
 
 ```bash
@@ -87,6 +115,22 @@ npm run dev
 ```
 
 API runs at `http://localhost:4000`.
+Versioned endpoints are served under `/api/v1/*`.
+
+## Auth and CSRF Usage
+
+1. Bootstrap the first user:
+- `POST /api/v1/auth/register` (first account is automatically `admin`).
+
+2. Login:
+- `POST /api/v1/auth/login` to receive `access_token`, `refresh_token`, and `csrf_token`.
+
+3. Call protected endpoints:
+- Send `Authorization: Bearer <access_token>` or `x-api-key: <api_key>`.
+
+4. Browser-origin mutating requests (`POST/PUT/PATCH/DELETE`):
+- Include header `x-csrf-token: <csrf_token>`.
+- Ensure cookie `ceoms_csrf` is sent.
 
 ## Prisma workflow
 
@@ -105,33 +149,42 @@ npm run prisma:migrate:deploy
 
 ## Key endpoints
 
-- `POST /master/suppliers`
-- `GET /master/suppliers`
-- `POST /master/buyers`
-- `GET /master/buyers`
-- `POST /master/warehouses`
-- `GET /master/warehouses`
-- `POST /master/grades`
-- `GET /master/grades`
-- `POST /master/bag-types`
-- `GET /master/bag-types`
-- `POST /procurement/auction-lots`
-- `POST /procurement/direct-agreements`
-- `GET /procurement/direct-agreements`
-- `POST /procurement/direct-deliveries`
-- `GET /inventory/lots`
-- `POST /inventory/adjustments`
-- `GET /inventory/dashboard`
-- `POST /contracts`
-- `POST /contracts/:contractId/allocations`
-- `GET /contracts/dashboard`
-- `POST /shipments`
-- `PATCH /shipments/:shipmentId/status`
-- `POST /shipments/:shipmentId/documents/generate`
-- `GET /shipments/:shipmentId/documents`
-- `POST /costs/entries`
-- `GET /profitability/contracts/:contractId`
-- `GET /traceability/lots/:lotId`
+- `GET /api/v1/health`
+- `GET /api/v1/auth/csrf-token`
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/refresh`
+- `POST /api/v1/auth/logout`
+- `GET /api/v1/auth/me`
+- `POST /api/v1/auth/api-keys`
+- `GET /api/v1/auth/api-keys`
+- `POST /api/v1/master/suppliers`
+- `GET /api/v1/master/suppliers`
+- `POST /api/v1/master/buyers`
+- `GET /api/v1/master/buyers`
+- `POST /api/v1/master/warehouses`
+- `GET /api/v1/master/warehouses`
+- `POST /api/v1/master/grades`
+- `GET /api/v1/master/grades`
+- `POST /api/v1/master/bag-types`
+- `GET /api/v1/master/bag-types`
+- `POST /api/v1/procurement/auction-lots`
+- `POST /api/v1/procurement/direct-agreements`
+- `GET /api/v1/procurement/direct-agreements`
+- `POST /api/v1/procurement/direct-deliveries`
+- `GET /api/v1/inventory/lots`
+- `POST /api/v1/inventory/adjustments`
+- `GET /api/v1/inventory/dashboard`
+- `POST /api/v1/contracts`
+- `POST /api/v1/contracts/:contractId/allocations`
+- `GET /api/v1/contracts/dashboard`
+- `POST /api/v1/shipments`
+- `PATCH /api/v1/shipments/:shipmentId/status`
+- `POST /api/v1/shipments/:shipmentId/documents/generate`
+- `GET /api/v1/shipments/:shipmentId/documents`
+- `POST /api/v1/costs/entries`
+- `GET /api/v1/profitability/contracts/:contractId`
+- `GET /api/v1/traceability/lots/:lotId`
 
 ## Important business guarantees in the API
 

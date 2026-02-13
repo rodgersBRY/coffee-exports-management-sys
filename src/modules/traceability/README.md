@@ -12,7 +12,7 @@ Provides backward and forward lot traceability across procurement, allocations, 
 
 ## Endpoints
 
-- `GET /traceability/lots/:lotId`
+- `GET /api/v1/traceability/lots/:lotId`
 
 ## Configuration Notes
 

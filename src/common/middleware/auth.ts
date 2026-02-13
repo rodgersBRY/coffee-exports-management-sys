@@ -1,10 +1,10 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, RequestHandler, Response } from "express";
 
 import { ApiError } from "../errors/ApiError.js";
 import { verifyAccessToken } from "../security/jwt.js";
 import { hashSha256 } from "../security/crypto.js";
 import { query } from "../../db/pool.js";
-import { UserRole } from "../../types/auth.js";
+import { AuthContext, UserRole } from "../../types/auth.js";
 
 type UserRow = {
   id: number;
@@ -29,11 +29,32 @@ function parseBearerToken(header: string | undefined): string | null {
   return token;
 }
 
-export async function authenticate(
+export const authenticate: RequestHandler = (req: Request, _res: Response, next: NextFunction) => {
+  void resolveAuthContext(req)
+    .then((auth) => {
+      if (!auth) {
+        throw new ApiError(401, "Authentication required");
+      }
+      req.auth = auth;
+      next();
+    })
+    .catch(next);
+};
+
+export const authenticateOptional: RequestHandler = (
   req: Request,
   _res: Response,
   next: NextFunction,
-): Promise<void> {
+) => {
+  void resolveAuthContext(req)
+    .then((auth) => {
+      req.auth = auth;
+      next();
+    })
+    .catch(next);
+};
+
+async function resolveAuthContext(req: Request): Promise<AuthContext | undefined> {
   const bearer = parseBearerToken(req.headers.authorization);
   if (bearer) {
     const claims = verifyAccessToken(bearer);
@@ -45,14 +66,13 @@ export async function authenticate(
       throw new ApiError(401, "User is inactive or missing");
     }
 
-    req.auth = {
+    const auth: AuthContext = {
       authType: "jwt",
       userId: userResult.rows[0].id,
       role: userResult.rows[0].role,
       sessionId: claims.sessionId,
     };
-    next();
-    return;
+    return auth;
   }
 
   const apiKeyHeader = req.headers["x-api-key"];
@@ -81,17 +101,16 @@ export async function authenticate(
 
     const row = result.rows[0];
     await query("UPDATE api_keys SET last_used_at = NOW() WHERE id = $1", [row.id]);
-    req.auth = {
+    const auth: AuthContext = {
       authType: "api_key",
       userId: row.user_id,
       role: row.role,
       apiKeyId: row.id,
     };
-    next();
-    return;
+    return auth;
   }
 
-  throw new ApiError(401, "Authentication required");
+  return undefined;
 }
 
 export function authorize(...allowedRoles: UserRole[]) {

@@ -13,9 +13,9 @@ Controls outbound commitments and lot allocations to prevent overselling.
 
 ## Endpoints
 
-- `POST /contracts`
-- `POST /contracts/:contractId/allocations`
-- `GET /contracts/dashboard`
+- `POST /api/v1/contracts`
+- `POST /api/v1/contracts/:contractId/allocations`
+- `GET /api/v1/contracts/dashboard`
 
 ## Configuration Notes
 
