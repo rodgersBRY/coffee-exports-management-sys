@@ -91,8 +91,8 @@ export class AuthService {
 
     const result = await query<UserRow>(
       `
-      INSERT INTO users (email, password_hash, full_name, role, is_active)
-      VALUES ($1, $2, $3, $4, TRUE)
+      INSERT INTO users (email, password_hash, full_name, role, is_active, updated_at)
+      VALUES ($1, $2, $3, $4, TRUE, NOW())
       RETURNING id, email, password_hash, full_name, role, is_active;
       `,
       [email, passwordHash, input.full_name, role],

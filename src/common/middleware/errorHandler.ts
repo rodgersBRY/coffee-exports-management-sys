@@ -1,12 +1,16 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 
+import { env } from "../../config/env.js";
 import { ApiError } from "../errors/ApiError.js";
 import { logger } from "../logger.js";
 
 type PgError = {
   code?: string;
   detail?: string;
+  message?: string;
+  errno?: string | number;
+  syscall?: string;
 };
 
 export function errorHandler(
@@ -38,6 +42,32 @@ export function errorHandler(
     return res.status(409).json({
       message: "Invalid reference",
       detail: pgError.detail ?? null,
+    });
+  }
+  if (pgError?.code === "42P01") {
+    return res.status(500).json({
+      message: "Database schema is out of date. Run Prisma migrations.",
+      request_id: _req.requestId ?? null,
+      ...(env.nodeEnv === "development" ? { detail: pgError.message ?? null } : {}),
+    });
+  }
+  if (pgError?.code === "28P01" || pgError?.code === "3D000") {
+    return res.status(500).json({
+      message: "Database connection configuration is invalid.",
+      request_id: _req.requestId ?? null,
+      ...(env.nodeEnv === "development" ? { detail: pgError.message ?? null } : {}),
+    });
+  }
+  if (
+    typeof pgError?.message === "string" &&
+    (pgError.message.includes("ECONNREFUSED") ||
+      pgError.message.includes("ENOTFOUND") ||
+      pgError.message.includes("ETIMEDOUT"))
+  ) {
+    return res.status(503).json({
+      message: "Database is unreachable.",
+      request_id: _req.requestId ?? null,
+      ...(env.nodeEnv === "development" ? { detail: pgError.message } : {}),
     });
   }
 

@@ -123,9 +123,10 @@ export const idempotencyMiddleware: RequestHandler = (
       request_path,
       request_fingerprint,
       status,
+      updated_at,
       expires_at
     )
-    VALUES ($1, $2, $3, $4, $5, $6, 'processing', $7)
+    VALUES ($1, $2, $3, $4, $5, $6, 'processing', NOW(), $7)
     ON CONFLICT (idempotency_key, actor_scope)
     DO UPDATE SET
       request_method = EXCLUDED.request_method,

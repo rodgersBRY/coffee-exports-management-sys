@@ -9,15 +9,17 @@ export const userRoleSchema = z.enum([
 ]);
 
 export const registerSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(12),
-  full_name: z.string().min(1),
+  email: z.string().email({ message: "Please provide a valid email address" }),
+  password: z
+    .string()
+    .min(12, { message: "Password must be at least 12 characters long" }),
+  full_name: z.string().min(1, { message: "Full name is required" }),
   role: userRoleSchema.optional(),
 });
 
 export const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+  email: z.string().email({ message: "Please provide a valid email address" }),
+  password: z.string().min(1, { message: "Password is required" }),
 });
 
 export const refreshSchema = z.object({
