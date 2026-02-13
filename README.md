@@ -115,6 +115,8 @@ npm run prisma:migrate:dev
 npm run dev
 ```
 
+`npm run dev` uses `nodemon` and automatically restarts the server on source changes.
+
 API runs at `http://localhost:4000`.
 Versioned endpoints are served under `/api/v1/*`.
 
@@ -177,6 +179,7 @@ Standard list response shape:
 ## Prisma workflow
 
 - Update `prisma/schema.prisma`
+- Keep datasource connection in `prisma.config.ts` (Prisma 7 style)
 - Generate and apply migration locally:
 
 ```bash
