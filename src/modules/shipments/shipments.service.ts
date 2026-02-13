@@ -125,7 +125,7 @@ export class ShipmentsService {
         contract_number: contract.contract_number,
         shipment_number: input.shipment_number,
         created_on: new Date().toISOString().slice(0, 10),
-        lots: lotsForSnapshotResult.rows.map((row) => ({
+        lots: lotsForSnapshotResult.rows.map((row: Record<string, unknown>) => ({
           allocation_id: row.allocation_id,
           lot_id: row.lot_id,
           lot_code: row.lot_code,
@@ -157,8 +157,8 @@ export class ShipmentsService {
         throw new ApiError(404, `Shipment ${shipmentId} not found`);
       }
       const shipment = shipmentResult.rows[0];
-      const currentIndex = SHIPMENT_PROGRESSION.indexOf(String(shipment.status) as never);
-      const targetIndex = SHIPMENT_PROGRESSION.indexOf(input.status as never);
+      const currentIndex = SHIPMENT_PROGRESSION.indexOf(String(shipment.status));
+      const targetIndex = SHIPMENT_PROGRESSION.indexOf(input.status);
       if (targetIndex < currentIndex) {
         throw new ApiError(409, "Shipment status cannot move backwards");
       }
@@ -207,7 +207,8 @@ export class ShipmentsService {
         let payload: Record<string, unknown>;
         if (docType === "commercial_invoice") {
           const totalWeight = allocations.reduce(
-            (sum, alloc) => sum + toNumber(alloc.allocated_kg),
+            (sum: number, alloc: Record<string, unknown>) =>
+              sum + toNumber(alloc.allocated_kg),
             0,
           );
           payload = {
@@ -222,7 +223,7 @@ export class ShipmentsService {
         } else if (docType === "packing_list") {
           payload = {
             shipment_number: shipment.shipment_number,
-            items: allocations.map((alloc) => ({
+            items: allocations.map((alloc: Record<string, unknown>) => ({
               allocation_id: alloc.id,
               lot_id: alloc.lot_id,
               weight_kg: toNumber(alloc.allocated_kg),

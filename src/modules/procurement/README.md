@@ -1,0 +1,28 @@
+# Procurement Module
+
+## Purpose
+
+Handles inbound lot creation from both procurement channels:
+
+- Auction procurement (immutable lot identity)
+- Direct agreements and direct deliveries
+
+## Structure
+
+- `procurement.routes.ts`
+- `procurement.controller.ts`
+- `procurement.service.ts`
+- `procurement.validation.ts`
+
+## Endpoints
+
+- `POST /procurement/auction-lots`
+- `POST /procurement/direct-agreements`
+- `GET /procurement/direct-agreements`
+- `POST /procurement/direct-deliveries`
+
+## Configuration Notes
+
+- Uses transactions from `src/db/pool.ts` for lot + procurement record atomicity.
+- Uses shared helper checks (`ensureReference`) for referential integrity.
+- Lot creation defaults to `status = in_stock` and initializes `weight_available_kg`.

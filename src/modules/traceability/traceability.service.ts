@@ -43,8 +43,10 @@ export class TraceabilityService {
     const shipmentIds = Array.from(
       new Set(
         allocationsResult.rows
-          .map((row) => (row.shipment_id ? Number(row.shipment_id) : null))
-          .filter((id): id is number => id !== null),
+          .map((row: Record<string, unknown>) =>
+            row.shipment_id ? Number(row.shipment_id) : null,
+          )
+          .filter((id: number | null): id is number => id !== null),
       ),
     );
     const shipmentsResult =

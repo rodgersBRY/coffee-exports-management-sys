@@ -9,6 +9,22 @@ Phase 1 backend scaffold for a lot-native coffee export operations system.
 - Schema management: Prisma (`prisma/schema.prisma`)
 - Runtime DB access: `pg` with transaction-safe service logic
 
+## Architecture
+
+Codebase is organized for enterprise maintainability with separated layers:
+
+- `src/app`: Express app setup and centralized route registration
+- `src/config`: environment and runtime config
+- `src/db`: connection pool and transaction helper
+- `src/common`: shared middleware, errors, and reusable DB/domain helpers
+- `src/modules/*`: domain modules with strict separation:
+  - `*.routes.ts`
+  - `*.controller.ts`
+  - `*.service.ts`
+  - `*.validation.ts` (where needed)
+
+Each module has its own `README.md` under `src/modules/<module>/README.md`.
+
 ## What is implemented
 
 - Master data: suppliers, buyers, warehouses, grades, bag types
@@ -90,12 +106,18 @@ npm run prisma:migrate:deploy
 ## Key endpoints
 
 - `POST /master/suppliers`
+- `GET /master/suppliers`
 - `POST /master/buyers`
+- `GET /master/buyers`
 - `POST /master/warehouses`
+- `GET /master/warehouses`
 - `POST /master/grades`
+- `GET /master/grades`
 - `POST /master/bag-types`
+- `GET /master/bag-types`
 - `POST /procurement/auction-lots`
 - `POST /procurement/direct-agreements`
+- `GET /procurement/direct-agreements`
 - `POST /procurement/direct-deliveries`
 - `GET /inventory/lots`
 - `POST /inventory/adjustments`

@@ -9,7 +9,7 @@ export const SHIPMENT_PROGRESSION = [
   "cleared",
   "on_vessel",
   "completed",
-] as const;
+];
 
 export function toNumber(value: unknown): number {
   return Number(value);
