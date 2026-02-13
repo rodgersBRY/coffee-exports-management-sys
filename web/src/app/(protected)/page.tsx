@@ -1,26 +1,20 @@
 import { Card } from "@/components/ui/Card";
+import { OperationsOverview } from "@/modules/dashboard/OperationsOverview";
 
 export default function OverviewPage(): React.JSX.Element {
   return (
     <>
-      <Card
-        title="Operations Console"
-        description="This workspace is wired to your CEOMS API v1 and follows the same pagination/filter contracts across modules."
-      >
-        <div className="inline">
-          <span className="tag">Secure BFF API proxy</span>
-          <span className="tag">Token refresh</span>
-          <span className="tag">CSRF forwarding</span>
-          <span className="tag">Typed client errors</span>
-        </div>
-      </Card>
+      <OperationsOverview />
 
       <Card
-        title="How to use"
-        description="Open each module in the top menu, create records with the form section, and use list controls for search/filter/pagination."
+        title="Design Intent"
+        description="Built for lot-heavy exporter operations with high table contrast, fast filtering, and exception visibility."
       >
-        <div className="alert info">
-          For endpoints that require dynamic path parameters (e.g. allocation, shipment status, docs generation), use the action forms on each module page.
+        <div className="inline">
+          <span className="tag">Auction vs direct visual tags</span>
+          <span className="tag">Sticky table headers</span>
+          <span className="tag">Collapsible operations panels</span>
+          <span className="tag">Breadcrumb context</span>
         </div>
       </Card>
     </>

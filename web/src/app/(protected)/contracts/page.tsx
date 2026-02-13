@@ -8,21 +8,31 @@ export default function ContractsPage(): React.JSX.Element {
   return (
     <>
       <div className="grid two">
-        <ActionPanel
-          title="Create Contract"
-          description="Open a sales contract with shipment window and terms."
-          endpoint="contracts"
-          method="POST"
-          sampleBody={JSON.stringify(createContractSample, null, 2)}
-        />
+        <details className="collapsible" open>
+          <summary>Contract Creation</summary>
+          <div className="content">
+            <ActionPanel
+              title="Create Contract"
+              description="Open a sales contract with shipment window and terms."
+              endpoint="contracts"
+              method="POST"
+              sampleBody={JSON.stringify(createContractSample, null, 2)}
+            />
+          </div>
+        </details>
 
-        <ActionPanel
-          title="Allocate Lot to Contract"
-          description="Use path like contracts/12/allocations to assign lot quantity."
-          endpoint="contracts/1/allocations"
-          method="POST"
-          sampleBody={JSON.stringify(allocateLotSample, null, 2)}
-        />
+        <details className="collapsible" open>
+          <summary>Allocation Builder</summary>
+          <div className="content">
+            <ActionPanel
+              title="Allocate Lot to Contract"
+              description="Use path like contracts/12/allocations to assign lot quantity."
+              endpoint="contracts/1/allocations"
+              method="POST"
+              sampleBody={JSON.stringify(allocateLotSample, null, 2)}
+            />
+          </div>
+        </details>
       </div>
 
       <ResourcePanel

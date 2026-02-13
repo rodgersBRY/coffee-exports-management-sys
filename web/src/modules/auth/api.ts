@@ -22,9 +22,11 @@ export async function login(input: LoginInput): Promise<{ user: SessionUser }> {
     },
     body: JSON.stringify(input)
   });
+
   if (!response.ok) {
     throw await parseApiError(response);
   }
+  
   return (await response.json()) as { user: SessionUser };
 }
 

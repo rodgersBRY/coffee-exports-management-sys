@@ -183,70 +183,77 @@ export function ResourcePanel({
         </form>
       ) : null}
 
-      <div className="inline">
-        <label>
-          Search
-          <input
-            value={search}
-            onChange={(event) => {
-              setPage(1);
-              setSearch(event.target.value);
-            }}
-            placeholder="Search..."
-          />
-        </label>
+      <div className="resource-layout">
+        <aside className="filters-panel">
+          <h4>Filters</h4>
+          <div className="stack">
+            <label>
+              Search
+              <input
+                value={search}
+                onChange={(event) => {
+                  setPage(1);
+                  setSearch(event.target.value);
+                }}
+                placeholder="Lot, contract, reference..."
+              />
+            </label>
 
-        <label>
-          Page size
-          <select
-            value={String(pageSize)}
-            onChange={(event) => {
-              setPage(1);
-              setPageSize(Number(event.target.value));
-            }}
-          >
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
-        </label>
+            <label>
+              Page size
+              <select
+                value={String(pageSize)}
+                onChange={(event) => {
+                  setPage(1);
+                  setPageSize(Number(event.target.value));
+                }}
+              >
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </label>
 
-        {filters.map((filter) => (
-          <label key={filter.name}>
-            {filter.label}
-            <input
-              value={filterState[filter.name] ?? ""}
-              onChange={(event) => {
-                setPage(1);
-                setFilterState((previous) => ({
-                  ...previous,
-                  [filter.name]: event.target.value
-                }));
-              }}
-            />
-          </label>
-        ))}
+            {filters.map((filter) => (
+              <label key={filter.name}>
+                {filter.label}
+                <input
+                  value={filterState[filter.name] ?? ""}
+                  onChange={(event) => {
+                    setPage(1);
+                    setFilterState((previous) => ({
+                      ...previous,
+                      [filter.name]: event.target.value
+                    }));
+                  }}
+                />
+              </label>
+            ))}
+          </div>
+        </aside>
+
+        <div className="results-panel">
+          <ErrorAlert error={listQuery.error} />
+
+          {listQuery.isLoading ? (
+            <div className="alert info">Loading...</div>
+          ) : (
+            <>
+              <DataTable rows={(listQuery.data?.data ?? []) as GenericRow[]} />
+              {listQuery.data ? (
+                <PaginationBar
+                  page={listQuery.data.meta.page}
+                  pageSize={listQuery.data.meta.page_size}
+                  total={listQuery.data.meta.total}
+                  hasNext={listQuery.data.meta.has_next}
+                  hasPrev={listQuery.data.meta.has_prev}
+                  onPageChange={setPage}
+                />
+              ) : null}
+            </>
+          )}
+        </div>
       </div>
-
-      <ErrorAlert error={listQuery.error} />
-
-      {listQuery.isLoading ? (
-        <div className="alert info">Loading...</div>
-      ) : (
-        <>
-          <DataTable rows={(listQuery.data?.data ?? []) as GenericRow[]} />
-          {listQuery.data ? (
-            <PaginationBar
-              page={listQuery.data.meta.page}
-              pageSize={listQuery.data.meta.page_size}
-              total={listQuery.data.meta.total}
-              hasNext={listQuery.data.meta.has_next}
-              hasPrev={listQuery.data.meta.has_prev}
-              onPageChange={setPage}
-            />
-          ) : null}
-        </>
-      )}
     </Card>
   );
 }

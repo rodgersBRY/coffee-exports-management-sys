@@ -20,10 +20,7 @@ const ALLOWED_ROOTS = new Set([
   "health"
 ]);
 
-function buildPath(segments: string[] | undefined): string {
-  if (!segments || segments.length === 0) {
-    return "health";
-  }
+function buildPath(segments: string[]): string {
   return segments.join("/");
 }
 
@@ -94,7 +91,7 @@ async function relayResponse(
   return response;
 }
 
-async function handle(request: NextRequest, pathSegments: string[] | undefined): Promise<NextResponse> {
+async function handle(request: NextRequest, pathSegments: string[]): Promise<NextResponse> {
   const path = buildPath(pathSegments);
   const root = path.split("/")[0];
 
@@ -160,40 +157,40 @@ async function handle(request: NextRequest, pathSegments: string[] | undefined):
 
 export async function GET(
   request: NextRequest,
-  context: { params: { path?: string[] } }
+  context: { params: Promise<{ path: string[] }> }
 ): Promise<NextResponse> {
-  const { path } = context.params;
+  const { path } = await context.params;
   return handle(request, path);
 }
 
 export async function POST(
   request: NextRequest,
-  context: { params: { path?: string[] } }
+  context: { params: Promise<{ path: string[] }> }
 ): Promise<NextResponse> {
-  const { path } = context.params;
+  const { path } = await context.params;
   return handle(request, path);
 }
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: { path?: string[] } }
+  context: { params: Promise<{ path: string[] }> }
 ): Promise<NextResponse> {
-  const { path } = context.params;
+  const { path } = await context.params;
   return handle(request, path);
 }
 
 export async function PUT(
   request: NextRequest,
-  context: { params: { path?: string[] } }
+  context: { params: Promise<{ path: string[] }> }
 ): Promise<NextResponse> {
-  const { path } = context.params;
+  const { path } = await context.params;
   return handle(request, path);
 }
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { path?: string[] } }
+  context: { params: Promise<{ path: string[] }> }
 ): Promise<NextResponse> {
-  const { path } = context.params;
+  const { path } = await context.params;
   return handle(request, path);
 }
