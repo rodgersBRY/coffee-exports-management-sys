@@ -11,6 +11,7 @@ export function LoginForm(): React.JSX.Element {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const mutation = useMutation({
     mutationFn: () => login({ email, password }),
@@ -39,12 +40,21 @@ export function LoginForm(): React.JSX.Element {
 
       <label>
         Password
-        <input
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          required
-        />
+        <div className="field-with-action">
+          <input
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+          />
+          <button
+            type="button"
+            className="ghost"
+            onClick={() => setShowPassword((previous) => !previous)}
+          >
+            {showPassword ? "Hide" : "Show"}
+          </button>
+        </div>
       </label>
 
       <button type="submit" disabled={mutation.isPending}>

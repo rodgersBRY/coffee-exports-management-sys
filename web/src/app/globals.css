@@ -157,6 +157,14 @@ label {
   @apply flex min-w-[180px] flex-col gap-1 text-sm text-[#6a5a44];
 }
 
+.field-with-action {
+  @apply flex items-center gap-2;
+}
+
+.field-with-action input {
+  @apply flex-1;
+}
+
 input,
 select,
 textarea,
