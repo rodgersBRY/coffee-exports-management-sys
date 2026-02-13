@@ -1,0 +1,302 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SupplierType {
+  auction_agent
+  mill
+  farmer
+  other
+}
+
+enum LotSource {
+  auction
+  direct
+}
+
+enum LotStatus {
+  in_stock
+  allocated
+  picked
+  stuffed
+  shipped
+}
+
+enum PriceTerms {
+  fob
+  cif
+}
+
+enum ContractStatus {
+  open
+  partially_fulfilled
+  fulfilled
+  closed
+}
+
+enum AllocationStatus {
+  allocated
+  shipped
+  cancelled
+}
+
+enum ShipmentStatus {
+  planned
+  stuffed
+  cleared
+  on_vessel
+  completed
+}
+
+enum DocumentType {
+  commercial_invoice
+  packing_list
+  traceability_report
+  cost_breakdown_summary
+}
+
+model Supplier {
+  id           Int          @id @default(autoincrement())
+  name         String
+  supplierType SupplierType @map("supplier_type")
+  country      String?
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  lots             Lot[]
+  directAgreements DirectAgreement[]
+  auctionRecords   AuctionProcurement[] @relation("auction_marketing_agent")
+
+  @@map("suppliers")
+}
+
+model Buyer {
+  id        Int       @id @default(autoincrement())
+  name      String
+  country   String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  contracts Contract[]
+
+  @@map("buyers")
+}
+
+model Warehouse {
+  id        Int       @id @default(autoincrement())
+  name      String
+  location  String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  lots      Lot[]
+
+  @@map("warehouses")
+}
+
+model Grade {
+  id          Int        @id @default(autoincrement())
+  code        String
+  description String?
+  createdAt   DateTime   @default(now()) @map("created_at")
+  lots        Lot[]
+  contracts   Contract[]
+
+  @@map("grades")
+}
+
+model BagType {
+  id        Int      @id @default(autoincrement())
+  name      String
+  weightKg  Decimal  @db.Decimal(10, 3) @map("weight_kg")
+  createdAt DateTime @default(now()) @map("created_at")
+  lots      Lot[]
+
+  @@map("bag_types")
+}
+
+model Lot {
+  id                 Int       @id @default(autoincrement())
+  lotCode            String    @unique @map("lot_code")
+  source             LotSource
+  sourceReference    String    @map("source_reference")
+  supplierId         Int       @map("supplier_id")
+  gradeId            Int       @map("grade_id")
+  warehouseId        Int       @map("warehouse_id")
+  bagTypeId          Int       @map("bag_type_id")
+  cropYear           String    @map("crop_year")
+  bagsTotal          Int       @map("bags_total")
+  weightTotalKg      Decimal   @db.Decimal(12, 3) @map("weight_total_kg")
+  weightAvailableKg  Decimal   @db.Decimal(12, 3) @map("weight_available_kg")
+  purchasePricePerKg Decimal   @db.Decimal(12, 4) @map("purchase_price_per_kg")
+  auctionFeesTotal   Decimal   @default(0) @db.Decimal(14, 2) @map("auction_fees_total")
+  additionalCostTotal Decimal  @default(0) @db.Decimal(14, 2) @map("additional_cost_total")
+  status             LotStatus
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  supplier          Supplier            @relation(fields: [supplierId], references: [id])
+  grade             Grade               @relation(fields: [gradeId], references: [id])
+  warehouse         Warehouse           @relation(fields: [warehouseId], references: [id])
+  bagType           BagType             @relation(fields: [bagTypeId], references: [id])
+  auctionRecord     AuctionProcurement?
+  directDelivery    DirectDelivery?
+  allocations       Allocation[]
+  costEntries       CostEntry[]
+  stockAdjustments  StockAdjustment[]
+
+  @@index([source], map: "idx_lots_source")
+  @@index([status], map: "idx_lots_status")
+  @@map("lots")
+}
+
+model AuctionProcurement {
+  id                  Int      @id @default(autoincrement())
+  lotId               Int      @unique @map("lot_id")
+  auctionLotNumber    String   @map("auction_lot_number")
+  marketingAgentId    Int      @map("marketing_agent_id")
+  catalogDocumentPath String?  @map("catalog_document_path")
+  immutable           Boolean  @default(true)
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  lot            Lot      @relation(fields: [lotId], references: [id])
+  marketingAgent Supplier @relation("auction_marketing_agent", fields: [marketingAgentId], references: [id])
+
+  @@map("auction_procurements")
+}
+
+model DirectAgreement {
+  id               Int      @id @default(autoincrement())
+  supplierId       Int      @map("supplier_id")
+  agreementReference String @map("agreement_reference")
+  agreedPricePerKg Decimal  @db.Decimal(12, 4) @map("agreed_price_per_kg")
+  currency         String   @default("USD")
+  cropYear         String   @map("crop_year")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  supplier   Supplier         @relation(fields: [supplierId], references: [id])
+  deliveries DirectDelivery[]
+
+  @@map("direct_agreements")
+}
+
+model DirectDelivery {
+  id              Int      @id @default(autoincrement())
+  agreementId     Int      @map("agreement_id")
+  lotId           Int      @unique @map("lot_id")
+  deliveryReference String @map("delivery_reference")
+  receivedAt      DateTime @default(now()) @map("received_at")
+  moisturePercent Decimal  @db.Decimal(8, 3) @map("moisture_percent")
+  screenSize      Decimal  @db.Decimal(8, 3) @map("screen_size")
+  defectsPercent  Decimal  @db.Decimal(8, 3) @map("defects_percent")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  agreement DirectAgreement @relation(fields: [agreementId], references: [id])
+  lot       Lot             @relation(fields: [lotId], references: [id])
+
+  @@map("direct_deliveries")
+}
+
+model Contract {
+  id                  Int            @id @default(autoincrement())
+  contractNumber      String         @unique @map("contract_number")
+  buyerId             Int            @map("buyer_id")
+  gradeId             Int?           @map("grade_id")
+  quantityKg          Decimal        @db.Decimal(12, 3) @map("quantity_kg")
+  pricePerKg          Decimal        @db.Decimal(12, 4) @map("price_per_kg")
+  priceTerms          PriceTerms     @map("price_terms")
+  currency            String         @default("USD")
+  shipmentWindowStart DateTime       @db.Date @map("shipment_window_start")
+  shipmentWindowEnd   DateTime       @db.Date @map("shipment_window_end")
+  allocatedKg         Decimal        @default(0) @db.Decimal(12, 3) @map("allocated_kg")
+  shippedKg           Decimal        @default(0) @db.Decimal(12, 3) @map("shipped_kg")
+  status              ContractStatus @default(open)
+  createdAt           DateTime       @default(now()) @map("created_at")
+
+  buyer       Buyer      @relation(fields: [buyerId], references: [id])
+  grade       Grade?     @relation(fields: [gradeId], references: [id])
+  allocations Allocation[]
+  shipments   Shipment[]
+
+  @@map("contracts")
+}
+
+model Shipment {
+  id                   Int            @id @default(autoincrement())
+  shipmentNumber       String         @unique @map("shipment_number")
+  contractId           Int            @map("contract_id")
+  status               ShipmentStatus @default(planned)
+  containerNumber      String?        @map("container_number")
+  sealNumber           String?        @map("seal_number")
+  plannedDeparture     DateTime?      @db.Date @map("planned_departure")
+  actualDeparture      DateTime?      @db.Date @map("actual_departure")
+  traceabilitySnapshot Json           @default("{}") @map("traceability_snapshot")
+  createdAt            DateTime       @default(now()) @map("created_at")
+
+  contract  Contract           @relation(fields: [contractId], references: [id])
+  allocations Allocation[]
+  documents ShipmentDocument[]
+  costs     CostEntry[]
+
+  @@index([contractId], map: "idx_shipments_contract")
+  @@map("shipments")
+}
+
+model Allocation {
+  id          Int              @id @default(autoincrement())
+  contractId  Int              @map("contract_id")
+  lotId       Int              @map("lot_id")
+  allocatedKg Decimal          @db.Decimal(12, 3) @map("allocated_kg")
+  status      AllocationStatus @default(allocated)
+  shipmentId  Int?             @map("shipment_id")
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  contract Contract  @relation(fields: [contractId], references: [id])
+  lot      Lot       @relation(fields: [lotId], references: [id])
+  shipment Shipment? @relation(fields: [shipmentId], references: [id])
+
+  @@index([contractId], map: "idx_allocations_contract")
+  @@index([lotId], map: "idx_allocations_lot")
+  @@index([status], map: "idx_allocations_status")
+  @@map("allocations")
+}
+
+model ShipmentDocument {
+  id           Int          @id @default(autoincrement())
+  shipmentId   Int          @map("shipment_id")
+  documentType DocumentType @map("document_type")
+  payload      Json         @default("{}")
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id])
+
+  @@map("shipment_documents")
+}
+
+model CostEntry {
+  id         Int      @id @default(autoincrement())
+  lotId      Int?     @map("lot_id")
+  shipmentId Int?     @map("shipment_id")
+  category   String
+  amount     Decimal  @db.Decimal(14, 2)
+  currency   String   @default("USD")
+  notes      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  lot      Lot?      @relation(fields: [lotId], references: [id])
+  shipment Shipment? @relation(fields: [shipmentId], references: [id])
+
+  @@map("cost_entries")
+}
+
+model StockAdjustment {
+  id           Int      @id @default(autoincrement())
+  lotId        Int      @map("lot_id")
+  adjustmentKg Decimal  @db.Decimal(12, 3) @map("adjustment_kg")
+  reason       String
+  approvedBy   String   @map("approved_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  lot Lot @relation(fields: [lotId], references: [id])
+
+  @@map("stock_adjustments")
+}

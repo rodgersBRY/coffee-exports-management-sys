@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ceoms-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ceoms
+      POSTGRES_PASSWORD: ceoms
+      POSTGRES_DB: ceoms
+    ports:
+      - "5432:5432"
+    volumes:
+      - ceoms_pg_data:/var/lib/postgresql/data
+
+volumes:
+  ceoms_pg_data:
