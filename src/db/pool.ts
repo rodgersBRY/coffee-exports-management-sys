@@ -1,9 +1,20 @@
+import { readFileSync } from "node:fs";
+
 import { Pool, PoolClient, QueryResult, QueryResultRow } from "pg";
 
 import { env } from "../config/env.js";
 
+const ssl =
+  env.dbSslMode === "require"
+    ? {
+        rejectUnauthorized: env.dbSslRejectUnauthorized,
+        ca: env.dbSslCaPath ? readFileSync(env.dbSslCaPath, "utf-8") : undefined,
+      }
+    : undefined;
+
 export const pool = new Pool({
   connectionString: env.databaseUrl,
+  ssl,
 });
 
 export async function query<T extends QueryResultRow = QueryResultRow>(
