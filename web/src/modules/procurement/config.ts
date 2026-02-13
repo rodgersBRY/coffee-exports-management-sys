@@ -1,4 +1,5 @@
 import type { FieldConfig, FilterConfig } from "@/components/data/ResourcePanel";
+import type { GuidedField } from "@/components/data/GuidedActionForm";
 
 export const directAgreementFields: FieldConfig[] = [
   { name: "supplier_id", label: "Supplier ID", type: "number", required: true, integer: true },
@@ -9,37 +10,37 @@ export const directAgreementFields: FieldConfig[] = [
 ];
 
 export const directAgreementFilters: FilterConfig[] = [
-  { name: "supplier_id", label: "Filter supplier_id" },
-  { name: "crop_year", label: "Filter crop_year" },
-  { name: "currency", label: "Filter currency" }
+  { name: "supplier_id", label: "Supplier ID" },
+  { name: "crop_year", label: "Crop year" },
+  { name: "currency", label: "Currency" }
 ];
 
-export const auctionLotSample = {
-  lot_number: "AUC-LOT-001",
-  marketing_agent_id: 1,
-  grade_id: 1,
-  warehouse_id: 1,
-  bag_type_id: 1,
-  crop_year: "2025/2026",
-  bags: 200,
-  weight_total_kg: 12000,
-  purchase_price_per_kg: 5.45,
-  auction_fees_total: 250,
-  catalog_document_path: "/docs/auction-2026/catalog-1.pdf"
-};
+export const auctionLotFields: GuidedField[] = [
+  { name: "lot_number", label: "Auction lot number", type: "text", required: true },
+  { name: "marketing_agent_id", label: "Marketing agent ID", type: "number", required: true, integer: true },
+  { name: "grade_id", label: "Grade ID", type: "number", required: true, integer: true },
+  { name: "warehouse_id", label: "Warehouse ID", type: "number", required: true, integer: true },
+  { name: "bag_type_id", label: "Bag type ID", type: "number", required: true, integer: true },
+  { name: "crop_year", label: "Crop year", type: "text", required: true, placeholder: "2025/2026" },
+  { name: "bags", label: "Bags", type: "number", required: true, integer: true },
+  { name: "weight_total_kg", label: "Total weight (kg)", type: "number", required: true },
+  { name: "purchase_price_per_kg", label: "Purchase price per kg", type: "number", required: true },
+  { name: "auction_fees_total", label: "Auction fees total", type: "number" },
+  { name: "catalog_document_path", label: "Catalog document reference", type: "text" }
+];
 
-export const directDeliverySample = {
-  agreement_id: 1,
-  internal_lot_id: "DIR-LOT-001",
-  delivery_reference: "DEL-REF-001",
-  grade_id: 1,
-  warehouse_id: 1,
-  bag_type_id: 1,
-  bags: 100,
-  weight_total_kg: 6000,
-  moisture_percent: 11.2,
-  screen_size: 16.5,
-  defects_percent: 1.1,
-  processing_cost_total: 80,
-  transport_cost_total: 120
-};
+export const directDeliveryFields: GuidedField[] = [
+  { name: "agreement_id", label: "Agreement ID", type: "number", required: true, integer: true },
+  { name: "internal_lot_id", label: "Internal lot code", type: "text", required: true },
+  { name: "delivery_reference", label: "Delivery reference", type: "text", required: true },
+  { name: "grade_id", label: "Grade ID", type: "number", required: true, integer: true },
+  { name: "warehouse_id", label: "Warehouse ID", type: "number", required: true, integer: true },
+  { name: "bag_type_id", label: "Bag type ID", type: "number", required: true, integer: true },
+  { name: "bags", label: "Bags", type: "number", required: true, integer: true },
+  { name: "weight_total_kg", label: "Total weight (kg)", type: "number", required: true },
+  { name: "moisture_percent", label: "Moisture %", type: "number", required: true },
+  { name: "screen_size", label: "Screen size", type: "number", required: true },
+  { name: "defects_percent", label: "Defects %", type: "number", required: true },
+  { name: "processing_cost_total", label: "Processing cost total", type: "number" },
+  { name: "transport_cost_total", label: "Transport cost total", type: "number" }
+];

@@ -1,45 +1,55 @@
 "use client";
 
-import { ActionPanel } from "@/components/data/ActionPanel";
+import { GuidedActionForm } from "@/components/data/GuidedActionForm";
 import {
-  createShipmentSample,
-  generateDocsSample,
-  shipmentStatusSample
+  shipmentCreateFields,
+  shipmentDocumentFields,
+  shipmentDocumentViewFields,
+  shipmentRecordFields,
+  shipmentStatusFields
 } from "@/modules/shipments/config";
 
 export default function ShipmentsPage(): React.JSX.Element {
   return (
     <div className="grid two">
-      <ActionPanel
+      <GuidedActionForm
         title="Create Shipment"
-        description="Assemble shipment from allocated contract quantities."
-        endpoint="shipments"
-        method="POST"
-        sampleBody={JSON.stringify(createShipmentSample, null, 2)}
+        description="Assemble a shipment from allocated contract quantities."
+        submitLabel="Save shipment"
+        successMessage="Shipment saved"
+        pathTemplate="shipments"
+        bodyFields={shipmentCreateFields}
       />
 
-      <ActionPanel
-        title="Update Shipment Status"
-        description="Use path like shipments/5/status and status progression rules."
-        endpoint="shipments/1/status"
-        method="PATCH"
-        sampleBody={JSON.stringify(shipmentStatusSample, null, 2)}
+      <GuidedActionForm
+        title="Update Shipment Stage"
+        description="Move a shipment through its operational stages."
+        submitLabel="Update stage"
+        successMessage="Shipment stage updated"
+        pathTemplate="shipments/{shipment_id}/status"
+        pathFields={shipmentRecordFields}
+        bodyFields={shipmentStatusFields}
       />
 
-      <ActionPanel
-        title="Generate Shipment Documents"
-        description="Use path like shipments/5/documents/generate."
-        endpoint="shipments/1/documents/generate"
-        method="POST"
-        sampleBody={JSON.stringify(generateDocsSample, null, 2)}
+      <GuidedActionForm
+        title="Prepare Shipment Documents"
+        description="Select document types to prepare for a shipment."
+        submitLabel="Prepare documents"
+        successMessage="Shipment documents prepared"
+        pathTemplate="shipments/{shipment_id}/documents/generate"
+        pathFields={shipmentRecordFields}
+        bodyFields={shipmentDocumentFields}
       />
 
-      <ActionPanel
-        title="List Shipment Documents"
-        description="Use GET path like shipments/5/documents?page=1&page_size=20."
-        endpoint="shipments/1/documents"
+      <GuidedActionForm
+        title="View Shipment Documents"
+        description="Load documents generated for a shipment."
+        submitLabel="Load documents"
+        successMessage="Shipment documents loaded"
+        pathTemplate="shipments/{shipment_id}/documents"
+        pathFields={shipmentRecordFields}
+        queryFields={shipmentDocumentViewFields}
         method="GET"
-        sampleBody="{}"
       />
     </div>
   );

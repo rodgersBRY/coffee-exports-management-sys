@@ -21,6 +21,7 @@ export async function backendRequest(options: BackendRequestOptions): Promise<Re
   if (options.body !== undefined) {
     headers.set("content-type", "application/json");
   }
+
   if (options.accessToken) {
     headers.set("authorization", `Bearer ${options.accessToken}`);
   }
@@ -30,16 +31,36 @@ export async function backendRequest(options: BackendRequestOptions): Promise<Re
     headers.set("x-csrf-token", options.csrfToken);
     headers.set("cookie", `ceoms_csrf=${options.csrfToken}`);
   }
+  
   if (isMutation && options.idempotencyKey) {
     headers.set("idempotency-key", options.idempotencyKey);
   }
 
-  return fetch(url, {
-    method,
-    headers,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-    cache: "no-store"
-  });
+  try {
+    return await fetch(url, {
+      method,
+      headers,
+      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+      cache: "no-store"
+    });
+  } catch (error) {
+    const cause = error as { cause?: { code?: string } };
+    const code = cause.cause?.code ?? "FETCH_FAILED";
+
+    return new Response(
+      JSON.stringify({
+        message: "CEOMS API is unreachable",
+        detail: `Could not connect to ${url.origin}. Confirm API is running and CEOMS_API_URL is correct.`,
+        code
+      }),
+      {
+        status: 503,
+        headers: {
+          "content-type": "application/json"
+        }
+      }
+    );
+  }
 }
 
 export async function cloneJsonOrText(response: Response): Promise<unknown> {

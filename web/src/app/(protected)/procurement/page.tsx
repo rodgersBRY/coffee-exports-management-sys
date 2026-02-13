@@ -1,12 +1,12 @@
 "use client";
 
-import { ActionPanel } from "@/components/data/ActionPanel";
+import { GuidedActionForm } from "@/components/data/GuidedActionForm";
 import { ResourcePanel } from "@/components/data/ResourcePanel";
 import {
-  auctionLotSample,
+  auctionLotFields,
   directAgreementFields,
   directAgreementFilters,
-  directDeliverySample
+  directDeliveryFields
 } from "@/modules/procurement/config";
 
 export default function ProcurementPage(): React.JSX.Element {
@@ -23,21 +23,23 @@ export default function ProcurementPage(): React.JSX.Element {
           filters={directAgreementFilters}
         />
 
-        <ActionPanel
-          title="Create Auction Lot"
-          description="Capture auction procurement details as immutable source lots."
-          endpoint="procurement/auction-lots"
-          method="POST"
-          sampleBody={JSON.stringify(auctionLotSample, null, 2)}
+        <GuidedActionForm
+          title="Auction Purchase Intake"
+          description="Record auction lot details and save directly to inventory."
+          submitLabel="Save auction lot"
+          successMessage="Auction lot saved"
+          pathTemplate="procurement/auction-lots"
+          bodyFields={auctionLotFields}
         />
       </div>
 
-      <ActionPanel
-        title="Create Direct Delivery"
-        description="Attach delivery intake quality to an existing direct agreement and create an inventory lot."
-        endpoint="procurement/direct-deliveries"
-        method="POST"
-        sampleBody={JSON.stringify(directDeliverySample, null, 2)}
+      <GuidedActionForm
+        title="Direct Delivery Intake"
+        description="Capture incoming direct delivery quantities and quality metrics."
+        submitLabel="Save delivery"
+        successMessage="Direct delivery saved"
+        pathTemplate="procurement/direct-deliveries"
+        bodyFields={directDeliveryFields}
       />
     </>
   );

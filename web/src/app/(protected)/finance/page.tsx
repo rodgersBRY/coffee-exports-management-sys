@@ -1,25 +1,28 @@
 "use client";
 
-import { ActionPanel } from "@/components/data/ActionPanel";
-import { createCostEntrySample } from "@/modules/finance/config";
+import { GuidedActionForm } from "@/components/data/GuidedActionForm";
+import { contractLookupFields, costEntryFields } from "@/modules/finance/config";
 
 export default function FinancePage(): React.JSX.Element {
   return (
     <div className="grid two">
-      <ActionPanel
-        title="Create Cost Entry"
-        description="Attach lot- or shipment-level costs for profitability."
-        endpoint="costs/entries"
-        method="POST"
-        sampleBody={JSON.stringify(createCostEntrySample, null, 2)}
+      <GuidedActionForm
+        title="Record Cost"
+        description="Capture lot-level or shipment-level operational costs."
+        submitLabel="Save cost"
+        successMessage="Cost saved"
+        pathTemplate="costs/entries"
+        bodyFields={costEntryFields}
       />
 
-      <ActionPanel
+      <GuidedActionForm
         title="Contract Profitability"
-        description="Use GET path like profitability/contracts/8."
-        endpoint="profitability/contracts/1"
+        description="View margin and total cost for a selected contract."
+        submitLabel="View profitability"
+        successMessage="Profitability loaded"
+        pathTemplate="profitability/contracts/{contract_id}"
+        pathFields={contractLookupFields}
         method="GET"
-        sampleBody="{}"
       />
     </div>
   );

@@ -7,6 +7,6 @@ export const apiKeyFields: FieldConfig[] = [
 ];
 
 export const apiKeyFilters: FilterConfig[] = [
-  { name: "user_id", label: "Filter user_id" },
-  { name: "is_active", label: "Filter is_active" }
+  { name: "user_id", label: "User ID" },
+  { name: "is_active", label: "Active (true/false)" }
 ];

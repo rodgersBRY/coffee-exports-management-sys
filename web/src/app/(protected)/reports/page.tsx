@@ -1,7 +1,9 @@
 "use client";
 
-import { ActionPanel } from "@/components/data/ActionPanel";
+import { GuidedActionForm } from "@/components/data/GuidedActionForm";
 import { Card } from "@/components/ui/Card";
+import { contractLookupFields } from "@/modules/finance/config";
+import { lotLookupFields } from "@/modules/traceability/config";
 
 export default function ReportsPage(): React.JSX.Element {
   return (
@@ -18,20 +20,24 @@ export default function ReportsPage(): React.JSX.Element {
       </Card>
 
       <div className="grid two">
-        <ActionPanel
+        <GuidedActionForm
           title="Contract Profitability"
-          description="Use GET path like profitability/contracts/8."
-          endpoint="profitability/contracts/1"
+          description="Review cost, revenue, and margin for a contract."
+          submitLabel="Load profitability"
+          successMessage="Profitability loaded"
+          pathTemplate="profitability/contracts/{contract_id}"
+          pathFields={contractLookupFields}
           method="GET"
-          sampleBody="{}"
         />
 
-        <ActionPanel
+        <GuidedActionForm
           title="Lot Traceability"
-          description="Use GET path like traceability/lots/14 to audit full origin chain."
-          endpoint="traceability/lots/1"
+          description="Review lot origin, allocations, and shipment movement."
+          submitLabel="Load traceability"
+          successMessage="Traceability loaded"
+          pathTemplate="traceability/lots/{lot_id}"
+          pathFields={lotLookupFields}
           method="GET"
-          sampleBody="{}"
         />
       </div>
     </>
