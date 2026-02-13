@@ -18,7 +18,7 @@ const idempotencyRequireKey = process.env.IDEMPOTENCY_REQUIRE_KEY !== "false";
 const idempotencyTtlSeconds = Number(process.env.IDEMPOTENCY_TTL_SECONDS ?? 86400);
 const jwtAccessSecret = process.env.JWT_ACCESS_SECRET;
 const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET;
-const jwtAccessTtl = process.env.JWT_ACCESS_TTL ?? "15m";
+const jwtAccessTtl = process.env.JWT_ACCESS_TTL ?? "1h";
 const jwtRefreshTtl = process.env.JWT_REFRESH_TTL ?? "7d";
 const dataEncryptionKey = process.env.DATA_ENCRYPTION_KEY;
 const csrfSecret = process.env.CSRF_SECRET;

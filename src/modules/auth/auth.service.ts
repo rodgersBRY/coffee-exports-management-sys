@@ -127,16 +127,19 @@ export class AuthService {
     }
 
     const sessionId = crypto.randomUUID();
+
     const accessToken = signAccessToken({
       userId: user.id,
       role: user.role,
       sessionId,
     });
+
     const refreshToken = signRefreshToken({
       userId: user.id,
       role: user.role,
       sessionId,
     });
+    
     const refreshTokenHash = hashSha256(refreshToken);
     const expiresAt = getExpiryDateFromJwt(refreshToken);
 
