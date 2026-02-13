@@ -76,6 +76,11 @@ export const idempotencyMiddleware: RequestHandler = (
   res: Response,
   next: NextFunction,
 ) => {
+  if (!env.idempotencyEnabled) {
+    next();
+    return;
+  }
+
   if (!MUTATING_METHODS.has(req.method.toUpperCase())) {
     next();
     return;

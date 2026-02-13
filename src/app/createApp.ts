@@ -14,6 +14,7 @@ import { registerRoutes } from "./registerRoutes.js";
 
 export function createApp(): Express {
   const app = express();
+
   app.disable("x-powered-by");
   app.set("trust proxy", env.trustProxy);
 
@@ -51,6 +52,7 @@ export function createApp(): Express {
   app.get("/health", (_req, res) => {
     res.json({ ok: true, service: "ceoms-api" });
   });
+  
   app.get("/api/v1/health", (_req, res) => {
     res.json({ ok: true, service: "ceoms-api", version: "v1" });
   });

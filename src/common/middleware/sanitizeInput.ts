@@ -36,9 +36,34 @@ function sanitizeValue(value: unknown): JsonValue {
   return String(value);
 }
 
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function overwriteObject(
+  target: Record<string, unknown>,
+  sanitized: Record<string, JsonValue>,
+): void {
+  for (const key of Object.keys(target)) {
+    delete target[key];
+  }
+  for (const [key, value] of Object.entries(sanitized)) {
+    target[key] = value;
+  }
+}
+
 export function sanitizeInput(req: Request, _res: Response, next: NextFunction): void {
   req.body = sanitizeValue(req.body);
-  req.query = sanitizeValue(req.query) as Request["query"];
-  req.params = sanitizeValue(req.params) as Request["params"];
+
+  const sanitizedQuery = sanitizeValue(req.query);
+  if (isPlainRecord(req.query) && isPlainRecord(sanitizedQuery)) {
+    overwriteObject(req.query, sanitizedQuery);
+  }
+
+  const sanitizedParams = sanitizeValue(req.params);
+  if (isPlainRecord(req.params) && isPlainRecord(sanitizedParams)) {
+    overwriteObject(req.params, sanitizedParams);
+  }
+
   next();
 }
