@@ -1,0 +1,214 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --surface-alt: #e9eef2;
+  --text: #17202a;
+  --text-dim: #5f6e7b;
+  --line: #d6dde3;
+  --primary: #0d5d7d;
+  --primary-strong: #09445c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  color: var(--text);
+  font-family: "Segoe UI", "Avenir Next", "Helvetica Neue", sans-serif;
+  background: radial-gradient(circle at top right, #d9eef7 0%, var(--bg) 45%);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.shell {
+  @apply min-h-screen;
+}
+
+.topbar {
+  @apply sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 px-4 py-3;
+  background: color-mix(in srgb, white 90%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+.brand {
+  @apply flex flex-col gap-0.5;
+}
+
+.brand h1 {
+  @apply m-0 text-base font-semibold text-slate-900;
+}
+
+.brand p {
+  @apply m-0 text-xs text-slate-500;
+}
+
+.nav {
+  @apply flex flex-wrap items-center gap-2;
+}
+
+.nav a {
+  @apply rounded-md px-2.5 py-1.5 text-sm text-slate-500 transition-colors;
+}
+
+.nav a.active,
+.nav a:hover {
+  @apply bg-cyan-100 text-cyan-900;
+}
+
+.container {
+  @apply mx-auto my-5 flex w-[min(1200px,95vw)] flex-col gap-4;
+}
+
+.grid {
+  @apply grid gap-4;
+}
+
+.grid.two {
+  @apply grid-cols-1 xl:grid-cols-2;
+}
+
+.card {
+  @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm;
+}
+
+.card h2,
+.card h3 {
+  @apply mb-1 mt-0 text-lg font-semibold text-slate-900;
+}
+
+.card p {
+  @apply mt-0 text-sm text-slate-500;
+}
+
+.stack {
+  @apply flex flex-col gap-3;
+}
+
+.inline {
+  @apply flex flex-wrap items-end gap-3;
+}
+
+label {
+  @apply flex min-w-[180px] flex-col gap-1 text-sm text-slate-500;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+input,
+select,
+textarea {
+  @apply rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  @apply border-cyan-700 outline-none ring-2 ring-cyan-100;
+}
+
+button {
+  @apply cursor-pointer rounded-md bg-cyan-700 px-3.5 py-2 text-sm font-medium text-white transition;
+}
+
+button:hover {
+  @apply bg-cyan-800;
+}
+
+button.secondary {
+  @apply bg-slate-600;
+}
+
+button.secondary:hover {
+  @apply bg-slate-700;
+}
+
+button.ghost {
+  @apply border border-slate-300 bg-transparent text-cyan-700;
+}
+
+button.ghost:hover {
+  @apply bg-cyan-50;
+}
+
+button.danger {
+  @apply bg-rose-700;
+}
+
+button:disabled {
+  @apply cursor-not-allowed opacity-60;
+}
+
+.table-wrap {
+  @apply overflow-x-auto rounded-md border border-slate-200;
+}
+
+table {
+  @apply w-full border-collapse text-sm;
+}
+
+thead {
+  background: var(--surface-alt);
+}
+
+th,
+td {
+  @apply border-b border-slate-200 px-2.5 py-2 text-left align-top;
+}
+
+.mono {
+  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+}
+
+.alert {
+  @apply rounded-md border px-3 py-2 text-sm;
+}
+
+.alert.error {
+  @apply border-rose-200 bg-rose-50 text-rose-900;
+}
+
+.alert.success {
+  @apply border-emerald-200 bg-emerald-50 text-emerald-900;
+}
+
+.alert.info {
+  @apply border-sky-200 bg-sky-50 text-sky-900;
+}
+
+.tag {
+  @apply inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700;
+}
+
+.toast-stack {
+  @apply fixed bottom-3 right-3 z-40 flex flex-col gap-2;
+}
+
+.toast {
+  @apply min-w-[260px] max-w-[360px] rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-md;
+}
+
+@media (max-width: 900px) {
+  label {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .container {
+    @apply w-[94vw];
+  }
+}

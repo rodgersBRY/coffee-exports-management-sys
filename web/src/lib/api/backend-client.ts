@@ -9,6 +9,7 @@ export type BackendRequestOptions = {
   body?: unknown;
   accessToken?: string;
   csrfToken?: string;
+  idempotencyKey?: string;
 };
 
 export async function backendRequest(options: BackendRequestOptions): Promise<Response> {
@@ -24,10 +25,13 @@ export async function backendRequest(options: BackendRequestOptions): Promise<Re
     headers.set("authorization", `Bearer ${options.accessToken}`);
   }
 
-  const isMutation = method !== "GET" && method !== "HEAD" && method !== "OPTIONS";
+  const isMutation = method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE";
   if (isMutation && options.csrfToken) {
     headers.set("x-csrf-token", options.csrfToken);
     headers.set("cookie", `ceoms_csrf=${options.csrfToken}`);
+  }
+  if (isMutation && options.idempotencyKey) {
+    headers.set("idempotency-key", options.idempotencyKey);
   }
 
   return fetch(url, {
@@ -43,5 +47,6 @@ export async function cloneJsonOrText(response: Response): Promise<unknown> {
   if (contentType.includes("application/json")) {
     return response.json();
   }
+  
   return response.text();
 }

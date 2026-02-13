@@ -120,6 +120,21 @@ npm run dev
 API runs at `http://localhost:4000`.
 Versioned endpoints are served under `/api/v1/*`.
 
+## Web application (Next.js)
+
+The repository now includes a frontend in `/Users/mawirab/Projects/coffee_export_system/web`.
+
+Run it in a second terminal:
+
+```bash
+cd web
+cp .env.example .env
+npm install
+npm run dev
+```
+
+Frontend runs at `http://localhost:3000` and securely proxies requests to the API.
+
 ## Auth and CSRF Usage
 
 1. Bootstrap the first user:

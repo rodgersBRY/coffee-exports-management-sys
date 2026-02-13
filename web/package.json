@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "check": "npm run lint && npm run typecheck"
   },
@@ -27,6 +27,9 @@
     "@types/react-dom": "latest",
     "eslint": "latest",
     "eslint-config-next": "latest",
+    "@tailwindcss/postcss": "latest",
+    "postcss": "latest",
+    "tailwindcss": "latest",
     "typescript": "latest"
   }
 }
