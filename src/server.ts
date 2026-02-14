@@ -1,4 +1,5 @@
 import { createApp } from "./app/createApp.js";
+import { seedInitialUsersIfEmpty } from "./bootstrap/seedInitialUsers.js";
 import { logger } from "./common/logger.js";
 import { env } from "./config/env.js";
 import {
@@ -11,7 +12,10 @@ const app = createApp();
 
 async function bootstrap(): Promise<void> {
   registerPoolEventLogging();
+
   await verifyDatabaseConnection();
+
+  await seedInitialUsersIfEmpty();
 
   const server = app.listen(env.port, () => {
     logger.info(`CEOMS API running on http://localhost:${env.port}`);
@@ -29,6 +33,7 @@ async function bootstrap(): Promise<void> {
   process.on("SIGINT", () => {
     void shutdown("SIGINT");
   });
+  
   process.on("SIGTERM", () => {
     void shutdown("SIGTERM");
   });

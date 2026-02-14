@@ -120,6 +120,22 @@ npm run dev
 API runs at `http://localhost:4000`.
 Versioned endpoints are served under `/api/v1/*`.
 
+## First-run default users
+
+On first API startup (when `users` table is empty), the server auto-creates one test user per role from:
+
+- `src/bootstrap/defaultUsers.ts`
+
+Default seeded accounts include:
+
+- `admin@ceoms.test` (`admin`)
+- `trader@ceoms.test` (`trader`)
+- `warehouse@ceoms.test` (`warehouse`)
+- `finance@ceoms.test` (`finance`)
+- `compliance@ceoms.test` (`compliance`)
+
+Edit credentials in `src/bootstrap/defaultUsers.ts` before first run if needed.
+
 ## Web application (Next.js)
 
 The repository now includes a frontend in `/Users/mawirab/Projects/coffee_export_system/web`.
