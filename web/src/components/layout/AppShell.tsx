@@ -158,6 +158,7 @@ export function AppShell({ children, userEmail, userRole }: Props): React.JSX.El
                 );
               })}
             </nav>
+
             <button className="secondary" onClick={handleLogout} disabled={loggingOut}>
               {loggingOut ? "Signing out..." : "Sign out"}
             </button>
