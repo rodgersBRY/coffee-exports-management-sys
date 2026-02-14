@@ -36,3 +36,6 @@ Owns core reference data used by all transactional modules:
 - Validation failures are handled by global error middleware.
 - No cross-module writes should happen here beyond master tables.
 - Standard bag types (`50kg`, `60kg`) are auto-seeded at API startup via `src/bootstrap/defaultBagTypes.ts`.
+- Supplier type usage:
+  - `auction_agent` is used in auction procurement as the marketing agent/broker.
+  - `mill`, `farmer`, and `other` are used for direct procurement suppliers.

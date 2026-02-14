@@ -26,7 +26,7 @@ export const masterPanels: PanelConfig[] = [
         type: "select",
         required: true,
         options: [
-          { label: "Auction marketing agent", value: "auction_agent" },
+          { label: "Auction marketing agent / broker", value: "auction_agent" },
           { label: "Mill / processor", value: "mill" },
           { label: "Farmer / estate", value: "farmer" },
           { label: "Other direct supplier", value: "other" }

@@ -36,8 +36,8 @@ export default function ProcurementPage(): React.JSX.Element {
     <>
       <ErrorAlert error={referenceQuery.error} />
       <div className="alert info">
-        Kenya-style flow: auction lots are recorded against an auction marketing agent, while direct agreements use
-        direct suppliers.
+        Kenya-style flow: auction lots are recorded against an auction marketing agent / broker (set in Master Data
+        as supplier type "auction_agent"), while direct agreements use direct suppliers.
       </div>
 
       <ModuleWorkspace
