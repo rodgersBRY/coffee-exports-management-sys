@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { DataTable } from "@/components/data/DataTable";
 import { PaginationBar } from "@/components/data/PaginationBar";
+import { SearchableSelectControl } from "@/components/data/SearchableSelectControl";
 import { Card } from "@/components/ui/Card";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
 import { toListQueryString } from "@/lib/api/list-query";
@@ -20,7 +21,7 @@ type SelectOption = {
 export type FieldConfig = {
   name: string;
   label: string;
-  type: "text" | "number" | "date" | "select";
+  type: "text" | "number" | "date" | "select" | "search-select";
   required?: boolean;
   integer?: boolean;
   options?: SelectOption[];
@@ -29,7 +30,7 @@ export type FieldConfig = {
 export type FilterConfig = {
   name: string;
   label: string;
-  type?: "text" | "select";
+  type?: "text" | "select" | "search-select";
   options?: SelectOption[];
 };
 
@@ -42,12 +43,13 @@ type Props = {
   sortBy: string;
   sortOrder?: "asc" | "desc";
   filters?: FilterConfig[];
+  filtersPosition?: "sidebar" | "top";
 };
 
 type GenericRow = Record<string, unknown>;
 
 function parseFieldValue(field: FieldConfig, raw: string): unknown {
-  if (field.type === "select" && field.integer) {
+  if ((field.type === "select" || field.type === "search-select") && field.integer) {
     const value = Number(raw);
     return Math.trunc(value);
   }
@@ -70,7 +72,8 @@ export function ResourcePanel({
   createFields = [],
   sortBy,
   sortOrder = "desc",
-  filters = []
+  filters = [],
+  filtersPosition = "top"
 }: Props): React.JSX.Element {
   const queryClient = useQueryClient();
   const notify = useToastStore((state) => state.push);
@@ -165,6 +168,18 @@ export function ResourcePanel({
                       </option>
                     ))}
                   </select>
+                ) : field.type === "search-select" ? (
+                  <SearchableSelectControl
+                    value={formState[field.name] ?? ""}
+                    options={field.options ?? []}
+                    placeholder="Select..."
+                    onChange={(nextValue) =>
+                      setFormState((previous) => ({
+                        ...previous,
+                        [field.name]: nextValue
+                      }))
+                    }
+                  />
                 ) : (
                   <input
                     type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
@@ -190,10 +205,9 @@ export function ResourcePanel({
         </form>
       ) : null}
 
-      <div className="resource-layout">
-        <aside className="filters-panel">
-          <h4>Filters</h4>
-          <div className="stack">
+      {filtersPosition === "top" ? (
+        <div className="stack">
+          <div className="filters-toolbar">
             <label>
               Search
               <input
@@ -242,6 +256,19 @@ export function ResourcePanel({
                       </option>
                     ))}
                   </select>
+                ) : filter.type === "search-select" ? (
+                  <SearchableSelectControl
+                    value={filterState[filter.name] ?? ""}
+                    options={filter.options ?? []}
+                    placeholder="All"
+                    onChange={(nextValue) => {
+                      setPage(1);
+                      setFilterState((previous) => ({
+                        ...previous,
+                        [filter.name]: nextValue
+                      }));
+                    }}
+                  />
                 ) : (
                   <input
                     value={filterState[filter.name] ?? ""}
@@ -257,30 +284,135 @@ export function ResourcePanel({
               </label>
             ))}
           </div>
-        </aside>
 
-        <div className="results-panel">
-          <ErrorAlert error={listQuery.error} />
+          <div className="results-panel">
+            <ErrorAlert error={listQuery.error} />
 
-          {listQuery.isLoading ? (
-            <div className="alert info">Loading...</div>
-          ) : (
-            <>
-              <DataTable rows={(listQuery.data?.data ?? []) as GenericRow[]} />
-              {listQuery.data ? (
-                <PaginationBar
-                  page={listQuery.data.meta.page}
-                  pageSize={listQuery.data.meta.page_size}
-                  total={listQuery.data.meta.total}
-                  hasNext={listQuery.data.meta.has_next}
-                  hasPrev={listQuery.data.meta.has_prev}
-                  onPageChange={setPage}
-                />
-              ) : null}
-            </>
-          )}
+            {listQuery.isLoading ? (
+              <div className="alert info">Loading...</div>
+            ) : (
+              <>
+                <DataTable rows={(listQuery.data?.data ?? []) as GenericRow[]} />
+                {listQuery.data ? (
+                  <PaginationBar
+                    page={listQuery.data.meta.page}
+                    pageSize={listQuery.data.meta.page_size}
+                    total={listQuery.data.meta.total}
+                    hasNext={listQuery.data.meta.has_next}
+                    hasPrev={listQuery.data.meta.has_prev}
+                    onPageChange={setPage}
+                  />
+                ) : null}
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="resource-layout">
+          <aside className="filters-panel">
+            <h4>Filters</h4>
+            <div className="stack">
+              <label>
+                Search
+                <input
+                  value={search}
+                  onChange={(event) => {
+                    setPage(1);
+                    setSearch(event.target.value);
+                  }}
+                  placeholder="Lot, contract, reference..."
+                />
+              </label>
+
+              <label>
+                Page size
+                <select
+                  value={String(pageSize)}
+                  onChange={(event) => {
+                    setPage(1);
+                    setPageSize(Number(event.target.value));
+                  }}
+                >
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </label>
+
+              {filters.map((filter) => (
+                <label key={filter.name}>
+                  {filter.label}
+                  {filter.type === "select" ? (
+                    <select
+                      value={filterState[filter.name] ?? ""}
+                      onChange={(event) => {
+                        setPage(1);
+                        setFilterState((previous) => ({
+                          ...previous,
+                          [filter.name]: event.target.value
+                        }));
+                      }}
+                    >
+                      <option value="">All</option>
+                      {(filter.options ?? []).map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : filter.type === "search-select" ? (
+                    <SearchableSelectControl
+                      value={filterState[filter.name] ?? ""}
+                      options={filter.options ?? []}
+                      placeholder="All"
+                      onChange={(nextValue) => {
+                        setPage(1);
+                        setFilterState((previous) => ({
+                          ...previous,
+                          [filter.name]: nextValue
+                        }));
+                      }}
+                    />
+                  ) : (
+                    <input
+                      value={filterState[filter.name] ?? ""}
+                      onChange={(event) => {
+                        setPage(1);
+                        setFilterState((previous) => ({
+                          ...previous,
+                          [filter.name]: event.target.value
+                        }));
+                      }}
+                    />
+                  )}
+                </label>
+              ))}
+            </div>
+          </aside>
+
+          <div className="results-panel">
+            <ErrorAlert error={listQuery.error} />
+
+            {listQuery.isLoading ? (
+              <div className="alert info">Loading...</div>
+            ) : (
+              <>
+                <DataTable rows={(listQuery.data?.data ?? []) as GenericRow[]} />
+                {listQuery.data ? (
+                  <PaginationBar
+                    page={listQuery.data.meta.page}
+                    pageSize={listQuery.data.meta.page_size}
+                    total={listQuery.data.meta.total}
+                    hasNext={listQuery.data.meta.has_next}
+                    hasPrev={listQuery.data.meta.has_prev}
+                    onPageChange={setPage}
+                  />
+                ) : null}
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </Card>
   );
 }

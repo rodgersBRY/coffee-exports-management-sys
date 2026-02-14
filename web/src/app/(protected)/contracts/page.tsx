@@ -74,7 +74,7 @@ export default function ContractsPage(): React.JSX.Element {
                 sortBy="created_at"
                 filters={[
                   { name: "status", label: "Status" },
-                  { name: "buyer_id", label: "Buyer", type: "select", options: options.buyers },
+                  { name: "buyer_id", label: "Buyer", type: "search-select", options: options.buyers },
                   { name: "shipment_window_from", label: "Shipment window from" },
                   { name: "shipment_window_to", label: "Shipment window to" }
                 ]}

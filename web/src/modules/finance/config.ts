@@ -38,14 +38,14 @@ export function buildCostEntryFields(options: FinanceFieldOptions): GuidedField[
     {
       name: "lot_id",
       label: "Lot (optional)",
-      type: "select",
+      type: "search-select",
       integer: true,
       options: options.lots
     },
     {
       name: "shipment_id",
       label: "Shipment (optional)",
-      type: "select",
+      type: "search-select",
       integer: true,
       options: options.shipments
     },
@@ -61,7 +61,7 @@ export function buildContractLookupFields(options: FinanceFieldOptions): GuidedF
     {
       name: "contract_id",
       label: "Contract",
-      type: "select",
+      type: "search-select",
       required: true,
       integer: true,
       options: options.contracts

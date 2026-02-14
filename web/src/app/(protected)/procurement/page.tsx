@@ -13,13 +13,14 @@ import {
   buildDirectAgreementFilters,
   buildDirectDeliveryFields,
   buildProcurementFieldOptions,
-  type ProcurementReferenceData
+  type ProcurementReferenceData,
 } from "@/modules/procurement/config";
 
 export default function ProcurementPage(): React.JSX.Element {
   const referenceQuery = useQuery({
     queryKey: ["procurement", "reference-data"],
-    queryFn: () => apiClient<ProcurementReferenceData>("procurement/reference-data")
+    queryFn: () =>
+      apiClient<ProcurementReferenceData>("procurement/reference-data"),
   });
   const options = buildProcurementFieldOptions(
     referenceQuery.data ?? {
@@ -28,17 +29,13 @@ export default function ProcurementPage(): React.JSX.Element {
       warehouses: [],
       grades: [],
       bag_types: [],
-      direct_agreements: []
-    }
+      direct_agreements: [],
+    },
   );
 
   return (
     <>
       <ErrorAlert error={referenceQuery.error} />
-      <div className="alert info">
-        Kenya-style flow: auction lots are recorded against an auction marketing agent / broker (set in Master Data
-        as supplier type "auction_agent"), while direct agreements use direct suppliers.
-      </div>
 
       <ModuleWorkspace
         title="Procurement Workspace"
@@ -57,7 +54,7 @@ export default function ProcurementPage(): React.JSX.Element {
                 pathTemplate="procurement/auction-lots"
                 bodyFields={buildAuctionLotFields(options)}
               />
-            )
+            ),
           },
           {
             id: "agreements",
@@ -73,7 +70,7 @@ export default function ProcurementPage(): React.JSX.Element {
                 sortBy="created_at"
                 filters={buildDirectAgreementFilters(options)}
               />
-            )
+            ),
           },
           {
             id: "deliveries",
@@ -88,8 +85,8 @@ export default function ProcurementPage(): React.JSX.Element {
                 pathTemplate="procurement/direct-deliveries"
                 bodyFields={buildDirectDeliveryFields(options)}
               />
-            )
-          }
+            ),
+          },
         ]}
       />
     </>

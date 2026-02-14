@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 
+import { SearchableSelectControl } from "@/components/data/SearchableSelectControl";
 import { Card } from "@/components/ui/Card";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
 import { apiClient } from "@/lib/api/http-client";
@@ -21,6 +22,7 @@ export type GuidedField = {
     | "number"
     | "date"
     | "select"
+    | "search-select"
     | "textarea"
     | "number-list"
     | "text-list"
@@ -85,7 +87,7 @@ function parseValue(field: GuidedField, value: FieldState): unknown {
     return field.integer ? Math.trunc(numeric) : numeric;
   }
 
-  if (field.type === "select" && field.integer) {
+  if ((field.type === "select" || field.type === "search-select") && field.integer) {
     const numeric = Number(raw);
     if (!Number.isFinite(numeric)) {
       throw new Error(`${field.label} must be a valid value`);
@@ -248,6 +250,26 @@ export function GuidedActionForm({
                             </option>
                           ))}
                         </select>
+                      </label>
+                    );
+                  }
+
+                  if (field.type === "search-select") {
+                    return (
+                      <label key={field.name}>
+                        {field.label}
+                        <SearchableSelectControl
+                          value={Array.isArray(value) ? "" : String(value ?? "")}
+                          disabled={field.disabled}
+                          options={field.options ?? []}
+                          placeholder={field.placeholder ?? "Select..."}
+                          onChange={(nextValue) =>
+                            group.setState((previous: Record<string, FieldState>) => ({
+                              ...previous,
+                              [field.name]: nextValue
+                            }))
+                          }
+                        />
                       </label>
                     );
                   }

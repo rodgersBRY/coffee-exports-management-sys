@@ -53,7 +53,7 @@ export function buildContractFields(options: ContractsFieldOptions): GuidedField
     {
       name: "buyer_id",
       label: "Buyer",
-      type: "select",
+      type: "search-select",
       required: true,
       integer: true,
       options: options.buyers
@@ -88,7 +88,7 @@ export function buildAllocationPathFields(options: ContractsFieldOptions): Guide
     {
       name: "contract_id",
       label: "Contract",
-      type: "select",
+      type: "search-select",
       required: true,
       integer: true,
       options: options.contracts
@@ -98,7 +98,14 @@ export function buildAllocationPathFields(options: ContractsFieldOptions): Guide
 
 export function buildAllocationFields(options: ContractsFieldOptions): GuidedField[] {
   return [
-    { name: "lot_id", label: "Lot", type: "select", required: true, integer: true, options: options.lots },
+    {
+      name: "lot_id",
+      label: "Lot",
+      type: "search-select",
+      required: true,
+      integer: true,
+      options: options.lots
+    },
     { name: "allocated_kg", label: "Allocated quantity (kg)", type: "number", required: true }
   ];
 }

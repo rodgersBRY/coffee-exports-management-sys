@@ -30,7 +30,7 @@ export function buildLotLookupFields(options: TraceabilityFieldOptions): GuidedF
     {
       name: "lot_id",
       label: "Lot",
-      type: "select",
+      type: "search-select",
       required: true,
       integer: true,
       options: options.lots

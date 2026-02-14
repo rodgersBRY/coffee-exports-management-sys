@@ -58,7 +58,7 @@ export function buildShipmentCreateFields(options: ShipmentsFieldOptions): Guide
     {
       name: "contract_id",
       label: "Contract",
-      type: "select",
+      type: "search-select",
       required: true,
       integer: true,
       options: options.contracts
@@ -82,7 +82,7 @@ export function buildShipmentRecordFields(options: ShipmentsFieldOptions): Guide
     {
       name: "shipment_id",
       label: "Shipment",
-      type: "select",
+      type: "search-select",
       required: true,
       integer: true,
       options: options.shipments

@@ -57,7 +57,7 @@ export function buildDirectAgreementFields(options: ProcurementFieldOptions): Fi
     {
       name: "supplier_id",
       label: "Direct supplier",
-      type: "select",
+      type: "search-select",
       required: true,
       integer: true,
       options: options.suppliers
@@ -71,7 +71,7 @@ export function buildDirectAgreementFields(options: ProcurementFieldOptions): Fi
 
 export function buildDirectAgreementFilters(options: ProcurementFieldOptions): FilterConfig[] {
   return [
-    { name: "supplier_id", label: "Direct supplier", type: "select", options: options.suppliers },
+    { name: "supplier_id", label: "Direct supplier", type: "search-select", options: options.suppliers },
     { name: "crop_year", label: "Crop year" },
     { name: "currency", label: "Currency" }
   ];
@@ -83,7 +83,7 @@ export function buildAuctionLotFields(options: ProcurementFieldOptions): GuidedF
     {
       name: "marketing_agent_id",
       label: "Auction marketing agent / broker",
-      type: "select",
+      type: "search-select",
       required: true,
       integer: true,
       options: options.marketingAgents
@@ -126,7 +126,7 @@ export function buildDirectDeliveryFields(options: ProcurementFieldOptions): Gui
     {
       name: "agreement_id",
       label: "Direct agreement",
-      type: "select",
+      type: "search-select",
       required: true,
       integer: true,
       options: options.agreements

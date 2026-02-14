@@ -26,7 +26,7 @@ export function buildApiKeyFields(options: SecurityFieldOptions): FieldConfig[] 
     {
       name: "user_id",
       label: "User (optional)",
-      type: "select",
+      type: "search-select",
       integer: true,
       options: options.users
     },
@@ -36,7 +36,7 @@ export function buildApiKeyFields(options: SecurityFieldOptions): FieldConfig[] 
 
 export function buildApiKeyFilters(options: SecurityFieldOptions): FilterConfig[] {
   return [
-    { name: "user_id", label: "User", type: "select", options: options.users },
+    { name: "user_id", label: "User", type: "search-select", options: options.users },
     {
       name: "is_active",
       label: "Status",

@@ -46,9 +46,9 @@ export default function InventoryPage(): React.JSX.Element {
                 filters={[
                   { name: "source", label: "Source" },
                   { name: "status", label: "Status" },
-                  { name: "grade_id", label: "Grade", type: "select", options: options.grades },
-                  { name: "warehouse_id", label: "Warehouse", type: "select", options: options.warehouses },
-                  { name: "supplier_id", label: "Supplier", type: "select", options: options.suppliers },
+                  { name: "grade_id", label: "Grade", type: "search-select", options: options.grades },
+                  { name: "warehouse_id", label: "Warehouse", type: "search-select", options: options.warehouses },
+                  { name: "supplier_id", label: "Supplier", type: "search-select", options: options.suppliers },
                   { name: "crop_year", label: "Crop year" }
                 ]}
               />

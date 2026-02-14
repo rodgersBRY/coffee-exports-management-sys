@@ -59,14 +59,28 @@ export class InventoryService {
     const result = await query(
       `
       SELECT
-        l.*,
-        g.code AS grade_code,
-        s.name AS supplier_name,
-        w.name AS warehouse_name
+        l.id,
+        l.lot_code,
+        l.source,
+        l.source_reference,
+        l.crop_year,
+        l.bags_total,
+        l.weight_total_kg,
+        l.weight_available_kg,
+        l.purchase_price_per_kg,
+        l.auction_fees_total,
+        l.additional_cost_total,
+        l.status,
+        l.created_at,
+        g.code AS grade,
+        s.name AS supplier,
+        w.name AS warehouse,
+        bt.name AS bag_type
       FROM lots l
       JOIN grades g ON g.id = l.grade_id
       JOIN suppliers s ON s.id = l.supplier_id
       JOIN warehouses w ON w.id = l.warehouse_id
+      JOIN bag_types bt ON bt.id = l.bag_type_id
       ${whereSql}
       ORDER BY l.${listQuery.sortBy} ${listQuery.sortOrder}
       LIMIT $${values.length - 1} OFFSET $${values.length};
