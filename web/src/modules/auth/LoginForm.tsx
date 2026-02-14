@@ -22,7 +22,7 @@ export function LoginForm(): React.JSX.Element {
 
   return (
     <form
-      className="stack"
+      className="flex flex-col"
       onSubmit={(event) => {
         event.preventDefault();
         mutation.mutate();

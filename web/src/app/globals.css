@@ -158,7 +158,7 @@ a {
 }
 
 label {
-  @apply flex min-w-0 basis-[220px] grow flex-col gap-1 text-sm text-[#6a5a44];
+  @apply flex min-w-0 basis-20 grow flex-col gap-1 text-sm text-[#6a5a44];
 }
 
 .field-with-action {
