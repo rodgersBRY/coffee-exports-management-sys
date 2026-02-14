@@ -17,6 +17,10 @@ procurementRouter.get(
   "/direct-agreements",
   asyncHandler(procurementController.listDirectAgreements.bind(procurementController)),
 );
+procurementRouter.get(
+  "/reference-data",
+  asyncHandler(procurementController.getReferenceData.bind(procurementController)),
+);
 procurementRouter.post(
   "/direct-deliveries",
   asyncHandler(procurementController.createDirectDelivery.bind(procurementController)),

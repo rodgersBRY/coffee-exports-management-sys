@@ -40,6 +40,11 @@ export class ContractsController {
     const dashboard = await contractsService.getDashboard(query);
     res.json(dashboard);
   }
+
+  async getReferenceData(_req: Request, res: Response): Promise<void> {
+    const data = await contractsService.getReferenceData();
+    res.json(data);
+  }
 }
 
 export const contractsController = new ContractsController();

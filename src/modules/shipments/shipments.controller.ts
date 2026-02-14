@@ -48,6 +48,11 @@ export class ShipmentsController {
     const docs = await shipmentsService.listDocuments(shipmentId, query);
     res.json(docs);
   }
+
+  async getReferenceData(_req: Request, res: Response): Promise<void> {
+    const data = await shipmentsService.getReferenceData();
+    res.json(data);
+  }
 }
 
 export const shipmentsController = new ShipmentsController();

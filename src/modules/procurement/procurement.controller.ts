@@ -35,6 +35,11 @@ export class ProcurementController {
     const lot = await procurementService.createDirectDelivery(payload);
     res.status(201).json(lot);
   }
+
+  async getReferenceData(_req: Request, res: Response): Promise<void> {
+    const data = await procurementService.getReferenceData();
+    res.json(data);
+  }
 }
 
 export const procurementController = new ProcurementController();

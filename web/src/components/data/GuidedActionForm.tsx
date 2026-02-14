@@ -30,6 +30,7 @@ export type GuidedField = {
   rows?: number;
   placeholder?: string;
   options?: SelectOption[];
+  disabled?: boolean;
 };
 
 type Props = {
@@ -58,6 +59,13 @@ function parseValue(field: GuidedField, value: FieldState): unknown {
     if (field.required && selected.length === 0) {
       throw new Error(`${field.label} is required`);
     }
+    if (field.integer) {
+      const numbers = selected.map((entry) => Number(entry));
+      if (numbers.some((entry) => !Number.isFinite(entry))) {
+        throw new Error(`${field.label} contains an invalid value`);
+      }
+      return numbers.map((entry) => Math.trunc(entry));
+    }
     return selected;
   }
 
@@ -75,6 +83,14 @@ function parseValue(field: GuidedField, value: FieldState): unknown {
       throw new Error(`${field.label} must be a valid number`);
     }
     return field.integer ? Math.trunc(numeric) : numeric;
+  }
+
+  if (field.type === "select" && field.integer) {
+    const numeric = Number(raw);
+    if (!Number.isFinite(numeric)) {
+      throw new Error(`${field.label} must be a valid value`);
+    }
+    return Math.trunc(numeric);
   }
 
   if (field.type === "number-list") {
@@ -217,6 +233,7 @@ export function GuidedActionForm({
                         {field.label}
                         <select
                           value={Array.isArray(value) ? "" : String(value ?? "")}
+                          disabled={field.disabled}
                           onChange={(event) =>
                             group.setState((previous: Record<string, FieldState>) => ({
                               ...previous,
@@ -224,7 +241,7 @@ export function GuidedActionForm({
                             }))
                           }
                         >
-                          <option value="">Select...</option>
+                          <option value="">{field.placeholder ?? "Select..."}</option>
                           {(field.options ?? []).map((option) => (
                             <option key={option.value} value={option.value}>
                               {option.label}
@@ -247,6 +264,7 @@ export function GuidedActionForm({
                               <input
                                 type="checkbox"
                                 checked={checked}
+                                disabled={field.disabled}
                                 onChange={(event) => {
                                   group.setState((previous: Record<string, FieldState>) => {
                                     const current = Array.isArray(previous[field.name])
@@ -284,6 +302,7 @@ export function GuidedActionForm({
                         <textarea
                           rows={field.rows ?? 4}
                           value={Array.isArray(value) ? "" : String(value ?? "")}
+                          disabled={field.disabled}
                           onChange={(event) =>
                             group.setState((previous: Record<string, FieldState>) => ({
                               ...previous,
@@ -303,6 +322,7 @@ export function GuidedActionForm({
                         type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
                         step={field.type === "number" && !field.integer ? "0.001" : undefined}
                         value={Array.isArray(value) ? "" : String(value ?? "")}
+                        disabled={field.disabled}
                         onChange={(event) =>
                           group.setState((previous: Record<string, FieldState>) => ({
                             ...previous,

@@ -136,6 +136,19 @@ Default seeded accounts include:
 
 Edit credentials in `src/bootstrap/defaultUsers.ts` before first run if needed.
 
+## Standard bag types bootstrap
+
+On API startup, the server ensures standard bag types exist and seeds missing entries from:
+
+- `src/bootstrap/defaultBagTypes.ts`
+
+Default bag types:
+
+- `50kg`
+- `60kg`
+
+This is idempotent and safe to run on every startup (no duplicate inserts for these standards).
+
 ## Web application (Next.js)
 
 The repository now includes a frontend in `/Users/mawirab/Projects/coffee_export_system/web`.

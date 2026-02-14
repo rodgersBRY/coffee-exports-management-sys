@@ -19,6 +19,11 @@ export class FinanceController {
     const data = await financeService.getContractProfitability(contractId);
     res.json(data);
   }
+
+  async getReferenceData(_req: Request, res: Response): Promise<void> {
+    const data = await financeService.getReferenceData();
+    res.json(data);
+  }
 }
 
 export const financeController = new FinanceController();

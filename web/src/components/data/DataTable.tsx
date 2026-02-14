@@ -66,7 +66,7 @@ export function DataTable({ rows }: Props): React.JSX.Element {
                 const value = row[column];
                 if (typeof value === "object" && value !== null) {
                   return (
-                    <td key={`${index}-${column}`} className="mono">
+                    <td key={`${index}-${column}`} className="mono cell-json">
                       {formatJson(value)}
                     </td>
                   );

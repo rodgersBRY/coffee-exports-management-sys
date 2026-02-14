@@ -69,6 +69,21 @@ export class TraceabilityService {
       documents: docsResult.rows,
     };
   }
+
+  async getReferenceData(): Promise<unknown> {
+    const lotsResult = await query(
+      `
+      SELECT id, lot_code, source, status, crop_year
+      FROM lots
+      ORDER BY created_at DESC, id DESC
+      LIMIT 1000
+      `,
+    );
+
+    return {
+      lots: lotsResult.rows,
+    };
+  }
 }
 
 export const traceabilityService = new TraceabilityService();

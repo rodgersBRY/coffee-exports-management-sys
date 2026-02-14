@@ -316,6 +316,59 @@ export class ShipmentsService {
     );
     return buildPaginatedResult(result.rows, Number(countResult.rows[0].total), listQuery);
   }
+
+  async getReferenceData(): Promise<unknown> {
+    const [contractsResult, allocationsResult, shipmentsResult] = await Promise.all([
+      query(
+        `
+        SELECT id, contract_number, status, quantity_kg, allocated_kg, shipped_kg
+        FROM contracts
+        WHERE status IN ('open', 'partially_fulfilled')
+        ORDER BY created_at DESC, id DESC
+        LIMIT 500
+        `,
+      ),
+      query(
+        `
+        SELECT
+          a.id,
+          a.contract_id,
+          c.contract_number,
+          a.lot_id,
+          l.lot_code,
+          a.allocated_kg,
+          a.status
+        FROM allocations a
+        JOIN contracts c ON c.id = a.contract_id
+        JOIN lots l ON l.id = a.lot_id
+        WHERE a.status = 'allocated'
+          AND a.shipment_id IS NULL
+        ORDER BY a.id DESC
+        LIMIT 1000
+        `,
+      ),
+      query(
+        `
+        SELECT
+          s.id,
+          s.shipment_number,
+          s.status,
+          s.contract_id,
+          c.contract_number
+        FROM shipments s
+        JOIN contracts c ON c.id = s.contract_id
+        ORDER BY s.created_at DESC, s.id DESC
+        LIMIT 500
+        `,
+      ),
+    ]);
+
+    return {
+      contracts: contractsResult.rows,
+      allocations: allocationsResult.rows,
+      shipments: shipmentsResult.rows,
+    };
+  }
 }
 
 export const shipmentsService = new ShipmentsService();

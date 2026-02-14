@@ -1,5 +1,6 @@
 import { createApp } from "./app/createApp.js";
 import { seedInitialUsersIfEmpty } from "./bootstrap/seedInitialUsers.js";
+import { seedStandardBagTypesIfMissing } from "./bootstrap/seedStandardBagTypes.js";
 import { logger } from "./common/logger.js";
 import { env } from "./config/env.js";
 import {
@@ -16,6 +17,7 @@ async function bootstrap(): Promise<void> {
   await verifyDatabaseConnection();
 
   await seedInitialUsersIfEmpty();
+  await seedStandardBagTypesIfMissing();
 
   const server = app.listen(env.port, () => {
     logger.info(`CEOMS API running on http://localhost:${env.port}`);

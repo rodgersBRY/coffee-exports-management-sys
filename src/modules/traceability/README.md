@@ -13,6 +13,7 @@ Provides backward and forward lot traceability across procurement, allocations, 
 ## Endpoints
 
 - `GET /api/v1/traceability/lots/:lotId`
+- `GET /api/v1/traceability/reference-data`
 
 ## Configuration Notes
 
@@ -20,3 +21,4 @@ Provides backward and forward lot traceability across procurement, allocations, 
   - auction: pulls from `auction_procurements`
   - direct: pulls from `direct_deliveries` + `direct_agreements`
 - Aggregates linked allocations, shipments, and documents for audit-ready reporting.
+- `reference-data` returns lot options for UI lookup selectors.

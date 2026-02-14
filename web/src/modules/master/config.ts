@@ -13,7 +13,8 @@ export type PanelConfig = {
 export const masterPanels: PanelConfig[] = [
   {
     title: "Suppliers",
-    description: "Manage auction agents, mills, and direct suppliers.",
+    description:
+      "Set up auction marketing agents (for auction lots) and direct suppliers (for direct procurement).",
     listEndpoint: "master/suppliers",
     createEndpoint: "master/suppliers",
     sortBy: "created_at",
@@ -25,16 +26,16 @@ export const masterPanels: PanelConfig[] = [
         type: "select",
         required: true,
         options: [
-          { label: "auction_agent", value: "auction_agent" },
-          { label: "mill", value: "mill" },
-          { label: "farmer", value: "farmer" },
-          { label: "other", value: "other" }
+          { label: "Auction marketing agent", value: "auction_agent" },
+          { label: "Mill / processor", value: "mill" },
+          { label: "Farmer / estate", value: "farmer" },
+          { label: "Other direct supplier", value: "other" }
         ]
       },
       { name: "country", label: "Country", type: "text" }
     ],
     filters: [
-      { name: "type", label: "Filter type" },
+      { name: "type", label: "Supplier type" },
       { name: "country", label: "Filter country" }
     ]
   },

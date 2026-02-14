@@ -165,6 +165,47 @@ export class InventoryService {
       by_source: bySource,
     };
   }
+
+  async getReferenceData(): Promise<unknown> {
+    const [gradesResult, warehousesResult, suppliersResult, lotsResult] = await Promise.all([
+      query(
+        `
+        SELECT id, code
+        FROM grades
+        ORDER BY code ASC
+        `,
+      ),
+      query(
+        `
+        SELECT id, name
+        FROM warehouses
+        ORDER BY name ASC
+        `,
+      ),
+      query(
+        `
+        SELECT id, name, supplier_type
+        FROM suppliers
+        ORDER BY name ASC
+        `,
+      ),
+      query(
+        `
+        SELECT id, lot_code, source, status, weight_available_kg
+        FROM lots
+        ORDER BY created_at DESC, id DESC
+        LIMIT 1000
+        `,
+      ),
+    ]);
+
+    return {
+      grades: gradesResult.rows,
+      warehouses: warehousesResult.rows,
+      suppliers: suppliersResult.rows,
+      lots: lotsResult.rows,
+    };
+  }
 }
 
 export const inventoryService = new InventoryService();

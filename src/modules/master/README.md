@@ -35,3 +35,4 @@ Owns core reference data used by all transactional modules:
 - Depends on shared DB config in `src/db/pool.ts`.
 - Validation failures are handled by global error middleware.
 - No cross-module writes should happen here beyond master tables.
+- Standard bag types (`50kg`, `60kg`) are auto-seeded at API startup via `src/bootstrap/defaultBagTypes.ts`.

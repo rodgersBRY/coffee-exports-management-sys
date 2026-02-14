@@ -24,10 +24,10 @@ export class ProcurementService {
         throw new ApiError(404, `Supplier ${input.marketing_agent_id} not found`);
       }
       const supplierType = String(supplierResult.rows[0].supplier_type);
-      if (supplierType !== "auction_agent" && supplierType !== "other") {
+      if (supplierType !== "auction_agent") {
         throw new ApiError(
           400,
-          "marketing_agent_id must reference a supplier with type auction_agent or other",
+          "marketing_agent_id must reference a supplier with type auction_agent",
         );
       }
 
@@ -81,7 +81,21 @@ export class ProcurementService {
 
   async createDirectAgreement(input: DirectAgreementInput): Promise<unknown> {
     return withTransaction(async (client) => {
-      await ensureReference(client, "suppliers", input.supplier_id, "Supplier");
+      const supplierResult = await client.query(
+        "SELECT supplier_type FROM suppliers WHERE id = $1",
+        [input.supplier_id],
+      );
+      if (supplierResult.rowCount === 0) {
+        throw new ApiError(404, `Supplier ${input.supplier_id} not found`);
+      }
+      const supplierType = String(supplierResult.rows[0].supplier_type);
+      if (supplierType === "auction_agent") {
+        throw new ApiError(
+          400,
+          "Direct procurement supplier cannot be an auction marketing agent",
+        );
+      }
+
       const result = await client.query(
         `
         INSERT INTO direct_agreements (
@@ -194,14 +208,85 @@ export class ProcurementService {
     values.push(listQuery.pageSize, listQuery.offset);
     const result = await query(
       `
-      SELECT * FROM direct_agreements
+      SELECT
+        da.*,
+        s.name AS supplier_name
+      FROM direct_agreements da
+      JOIN suppliers s ON s.id = da.supplier_id
       ${whereSql}
-      ORDER BY ${listQuery.sortBy} ${listQuery.sortOrder}
+      ORDER BY da.${listQuery.sortBy} ${listQuery.sortOrder}
       LIMIT $${values.length - 1} OFFSET $${values.length}
       `,
       values,
     );
     return buildPaginatedResult(result.rows, Number(countResult.rows[0].total), listQuery);
+  }
+
+  async getReferenceData(): Promise<unknown> {
+    const [suppliersResult, marketingAgentsResult, warehousesResult, gradesResult, bagTypesResult, agreementsResult] =
+      await Promise.all([
+        query(
+          `
+          SELECT id, name, supplier_type
+          FROM suppliers
+          WHERE supplier_type <> 'auction_agent'
+          ORDER BY name ASC
+          `,
+        ),
+        query(
+          `
+          SELECT id, name, supplier_type
+          FROM suppliers
+          WHERE supplier_type = 'auction_agent'
+          ORDER BY name ASC
+          `,
+        ),
+        query(
+          `
+          SELECT id, name, location
+          FROM warehouses
+          ORDER BY name ASC
+          `,
+        ),
+        query(
+          `
+          SELECT id, code, description
+          FROM grades
+          ORDER BY code ASC
+          `,
+        ),
+        query(
+          `
+          SELECT id, name, weight_kg
+          FROM bag_types
+          ORDER BY weight_kg ASC, name ASC
+          `,
+        ),
+        query(
+          `
+          SELECT
+            da.id,
+            da.agreement_reference,
+            da.crop_year,
+            da.currency,
+            da.supplier_id,
+            s.name AS supplier_name
+          FROM direct_agreements da
+          JOIN suppliers s ON s.id = da.supplier_id
+          ORDER BY da.created_at DESC, da.id DESC
+          LIMIT 500
+          `,
+        ),
+      ]);
+
+    return {
+      suppliers: suppliersResult.rows,
+      marketing_agents: marketingAgentsResult.rows,
+      warehouses: warehousesResult.rows,
+      grades: gradesResult.rows,
+      bag_types: bagTypesResult.rows,
+      direct_agreements: agreementsResult.rows,
+    };
   }
 }
 

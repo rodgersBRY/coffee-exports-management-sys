@@ -14,3 +14,7 @@ inventoryRouter.get(
   "/dashboard",
   asyncHandler(inventoryController.getDashboard.bind(inventoryController)),
 );
+inventoryRouter.get(
+  "/reference-data",
+  asyncHandler(inventoryController.getReferenceData.bind(inventoryController)),
+);

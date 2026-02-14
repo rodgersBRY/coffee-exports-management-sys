@@ -33,6 +33,11 @@ export class InventoryController {
     const dashboard = await inventoryService.getDashboard();
     res.json(dashboard);
   }
+
+  async getReferenceData(_req: Request, res: Response): Promise<void> {
+    const data = await inventoryService.getReferenceData();
+    res.json(data);
+  }
 }
 
 export const inventoryController = new InventoryController();

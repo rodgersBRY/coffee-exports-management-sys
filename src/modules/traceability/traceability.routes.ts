@@ -9,3 +9,7 @@ traceabilityRouter.get(
   "/lots/:lotId",
   asyncHandler(traceabilityController.getLotTraceability.bind(traceabilityController)),
 );
+traceabilityRouter.get(
+  "/reference-data",
+  asyncHandler(traceabilityController.getReferenceData.bind(traceabilityController)),
+);

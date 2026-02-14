@@ -130,9 +130,13 @@ a {
   @apply grid-cols-1 xl:grid-cols-2;
 }
 
+.grid > * {
+  min-width: 0;
+}
+
 .card {
   background: color-mix(in srgb, var(--white) 92%, var(--warm-beige));
-  @apply rounded-xl border border-[#d9ccb3] p-4 shadow-sm;
+  @apply min-w-0 rounded-xl border border-[#d9ccb3] p-4 shadow-sm;
 }
 
 .card h2,
@@ -154,7 +158,7 @@ a {
 }
 
 label {
-  @apply flex min-w-[180px] flex-col gap-1 text-sm text-[#6a5a44];
+  @apply flex min-w-0 basis-[220px] grow flex-col gap-1 text-sm text-[#6a5a44];
 }
 
 .field-with-action {
@@ -175,7 +179,7 @@ button {
 input,
 select,
 textarea {
-  @apply rounded-md border border-[#cfbfa4] bg-white px-3 py-2 text-sm text-[#2e2e2e];
+  @apply w-full rounded-md border border-[#cfbfa4] bg-white px-3 py-2 text-sm text-[#2e2e2e];
 }
 
 input:focus,
@@ -228,6 +232,10 @@ button:disabled {
   @apply grid grid-cols-1 gap-3 xl:grid-cols-[280px_1fr];
 }
 
+.resource-layout > * {
+  min-width: 0;
+}
+
 .filters-panel {
   @apply rounded-lg border border-[#d7cab0] bg-[#f7f2e6] p-3;
 }
@@ -238,15 +246,15 @@ button:disabled {
 }
 
 .results-panel {
-  @apply flex flex-col gap-3;
+  @apply min-w-0 flex flex-col gap-3;
 }
 
 .table-wrap {
-  @apply max-h-[520px] overflow-auto rounded-md border border-[#c9b99f] bg-white;
+  @apply max-h-[520px] w-full max-w-full overflow-auto rounded-md border border-[#c9b99f] bg-white;
 }
 
 table {
-  @apply w-full border-collapse text-sm;
+  @apply min-w-full border-collapse text-sm;
 }
 
 thead {
@@ -256,10 +264,18 @@ thead {
 
 th {
   @apply sticky top-0 z-10 border-b border-[#6f5438] px-2.5 py-2 text-left font-semibold;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 td {
   @apply border-b border-[#ebdfca] px-2.5 py-2 text-left align-top;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.cell-json {
+  white-space: pre-wrap;
 }
 
 tbody tr:nth-child(even) {
@@ -363,6 +379,46 @@ tbody tr:nth-child(even) {
 
 .collapsible .content {
   @apply p-3 pt-0;
+}
+
+.module-workspace {
+  @apply flex min-w-0 flex-col gap-3;
+}
+
+.module-workspace-header h2 {
+  color: var(--coffee-brown);
+  @apply m-0 text-xl font-semibold;
+}
+
+.module-workspace-header p {
+  @apply m-0 text-sm text-[#665642];
+}
+
+.module-workspace-tabs {
+  @apply flex flex-wrap gap-2 rounded-xl border border-[#d8c8ad] bg-[#f7f1e5] p-2;
+}
+
+.module-tab {
+  background: #fff8eb;
+  @apply min-w-[170px] flex-1 rounded-lg border border-[#d8c7aa] px-3 py-2 text-left transition;
+}
+
+.module-tab span {
+  color: var(--coffee-brown);
+  @apply block text-sm font-semibold;
+}
+
+.module-tab small {
+  @apply mt-0.5 block text-xs text-[#7a6a54];
+}
+
+.module-tab.active {
+  background: #f4e5cb;
+  border-color: #b88f58;
+}
+
+.module-workspace-content {
+  @apply min-w-0;
 }
 
 .toast-stack {

@@ -14,3 +14,7 @@ contractsRouter.get(
   "/dashboard",
   asyncHandler(contractsController.getDashboard.bind(contractsController)),
 );
+contractsRouter.get(
+  "/reference-data",
+  asyncHandler(contractsController.getReferenceData.bind(contractsController)),
+);

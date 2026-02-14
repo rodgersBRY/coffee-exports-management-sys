@@ -17,6 +17,7 @@ Converts allocations into shipments, enforces shipment lifecycle rules, and gene
 - `PATCH /api/v1/shipments/:shipmentId/status`
 - `POST /api/v1/shipments/:shipmentId/documents/generate`
 - `GET /api/v1/shipments/:shipmentId/documents`
+- `GET /api/v1/shipments/reference-data`
 
 ## Configuration Notes
 
@@ -26,3 +27,4 @@ Converts allocations into shipments, enforces shipment lifecycle rules, and gene
   - snapshots traceability JSON on shipment
 - Status updates cannot move backwards in workflow progression.
 - Document payloads are generated from shipment + contract + allocation data.
+- `reference-data` provides contracts, allocatable allocations, and shipment records for user-friendly selectors.

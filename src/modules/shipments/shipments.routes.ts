@@ -18,3 +18,7 @@ shipmentsRouter.get(
   "/:shipmentId/documents",
   asyncHandler(shipmentsController.listDocuments.bind(shipmentsController)),
 );
+shipmentsRouter.get(
+  "/reference-data",
+  asyncHandler(shipmentsController.getReferenceData.bind(shipmentsController)),
+);

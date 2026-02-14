@@ -29,6 +29,8 @@ export type FieldConfig = {
 export type FilterConfig = {
   name: string;
   label: string;
+  type?: "text" | "select";
+  options?: SelectOption[];
 };
 
 type Props = {
@@ -45,6 +47,11 @@ type Props = {
 type GenericRow = Record<string, unknown>;
 
 function parseFieldValue(field: FieldConfig, raw: string): unknown {
+  if (field.type === "select" && field.integer) {
+    const value = Number(raw);
+    return Math.trunc(value);
+  }
+
   if (field.type === "number") {
     const value = Number(raw);
     if (field.integer) {
@@ -217,16 +224,36 @@ export function ResourcePanel({
             {filters.map((filter) => (
               <label key={filter.name}>
                 {filter.label}
-                <input
-                  value={filterState[filter.name] ?? ""}
-                  onChange={(event) => {
-                    setPage(1);
-                    setFilterState((previous) => ({
-                      ...previous,
-                      [filter.name]: event.target.value
-                    }));
-                  }}
-                />
+                {filter.type === "select" ? (
+                  <select
+                    value={filterState[filter.name] ?? ""}
+                    onChange={(event) => {
+                      setPage(1);
+                      setFilterState((previous) => ({
+                        ...previous,
+                        [filter.name]: event.target.value
+                      }));
+                    }}
+                  >
+                    <option value="">All</option>
+                    {(filter.options ?? []).map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    value={filterState[filter.name] ?? ""}
+                    onChange={(event) => {
+                      setPage(1);
+                      setFilterState((previous) => ({
+                        ...previous,
+                        [filter.name]: event.target.value
+                      }));
+                    }}
+                  />
+                )}
               </label>
             ))}
           </div>

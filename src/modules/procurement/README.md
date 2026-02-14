@@ -19,6 +19,7 @@ Handles inbound lot creation from both procurement channels:
 - `POST /api/v1/procurement/auction-lots`
 - `POST /api/v1/procurement/direct-agreements`
 - `GET /api/v1/procurement/direct-agreements`
+- `GET /api/v1/procurement/reference-data`
 - `POST /api/v1/procurement/direct-deliveries`
 
 ## Configuration Notes
@@ -26,3 +27,4 @@ Handles inbound lot creation from both procurement channels:
 - Uses transactions from `src/db/pool.ts` for lot + procurement record atomicity.
 - Uses shared helper checks (`ensureReference`) for referential integrity.
 - Lot creation defaults to `status = in_stock` and initializes `weight_available_kg`.
+- `reference-data` exposes user-friendly option lists for suppliers, agents, warehouses, grades, bag types, and agreements.

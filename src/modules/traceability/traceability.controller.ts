@@ -12,6 +12,11 @@ export class TraceabilityController {
     const data = await traceabilityService.getLotTraceability(lotId);
     res.json(data);
   }
+
+  async getReferenceData(_req: Request, res: Response): Promise<void> {
+    const data = await traceabilityService.getReferenceData();
+    res.json(data);
+  }
 }
 
 export const traceabilityController = new TraceabilityController();

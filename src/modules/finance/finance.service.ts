@@ -98,6 +98,41 @@ export class FinanceService {
       margin_percent: Number(marginPercent.toFixed(2)),
     };
   }
+
+  async getReferenceData(): Promise<unknown> {
+    const [contractsResult, lotsResult, shipmentsResult] = await Promise.all([
+      query(
+        `
+        SELECT id, contract_number, status
+        FROM contracts
+        ORDER BY created_at DESC, id DESC
+        LIMIT 500
+        `,
+      ),
+      query(
+        `
+        SELECT id, lot_code, source, status
+        FROM lots
+        ORDER BY created_at DESC, id DESC
+        LIMIT 1000
+        `,
+      ),
+      query(
+        `
+        SELECT id, shipment_number, status
+        FROM shipments
+        ORDER BY created_at DESC, id DESC
+        LIMIT 500
+        `,
+      ),
+    ]);
+
+    return {
+      contracts: contractsResult.rows,
+      lots: lotsResult.rows,
+      shipments: shipmentsResult.rows,
+    };
+  }
 }
 
 export const financeService = new FinanceService();

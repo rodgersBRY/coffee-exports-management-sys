@@ -182,6 +182,60 @@ export class ContractsService {
       risk_alerts: riskAlerts,
     };
   }
+
+  async getReferenceData(): Promise<unknown> {
+    const [buyersResult, gradesResult, contractsResult, lotsResult] = await Promise.all([
+      query(
+        `
+        SELECT id, name, country
+        FROM buyers
+        ORDER BY name ASC
+        `,
+      ),
+      query(
+        `
+        SELECT id, code, description
+        FROM grades
+        ORDER BY code ASC
+        `,
+      ),
+      query(
+        `
+        SELECT id, contract_number, status, shipment_window_end
+        FROM contracts
+        WHERE status IN ('open', 'partially_fulfilled')
+        ORDER BY shipment_window_end ASC, id DESC
+        LIMIT 500
+        `,
+      ),
+      query(
+        `
+        SELECT
+          l.id,
+          l.lot_code,
+          l.source,
+          l.status,
+          l.weight_available_kg,
+          g.code AS grade_code,
+          s.name AS supplier_name
+        FROM lots l
+        JOIN grades g ON g.id = l.grade_id
+        JOIN suppliers s ON s.id = l.supplier_id
+        WHERE l.weight_available_kg > 0
+          AND l.status IN ('in_stock', 'allocated')
+        ORDER BY l.created_at DESC
+        LIMIT 500
+        `,
+      ),
+    ]);
+
+    return {
+      buyers: buyersResult.rows,
+      grades: gradesResult.rows,
+      contracts: contractsResult.rows,
+      lots: lotsResult.rows,
+    };
+  }
 }
 
 export const contractsService = new ContractsService();

@@ -14,6 +14,8 @@ Captures cost entries and computes contract-level profitability.
 ## Endpoints
 
 - `POST /api/v1/costs/entries`
+- `GET /api/v1/costs/reference-data`
+- `GET /api/v1/profitability/reference-data`
 - `GET /api/v1/profitability/contracts/:contractId`
 
 ## Configuration Notes
@@ -24,3 +26,4 @@ Captures cost entries and computes contract-level profitability.
   - purchase price
   - auction fees allocation
   - additional lot costs allocation
+- `reference-data` provides contracts, lots, and shipments for selector-driven form input.
