@@ -28,6 +28,7 @@ Provides API authentication and authorization controls:
 - `GET /api/v1/auth/users` (admin)
 - `POST /api/v1/auth/api-keys` (admin)
 - `GET /api/v1/auth/api-keys` (admin)
+- `PATCH /api/v1/auth/api-keys/:apiKeyId/revoke` (admin)
 
 ## Configuration Notes
 

@@ -1,7 +1,13 @@
+import type { ReactNode } from "react";
+
 import { formatDateForDisplay, isLikelyDateColumn } from "@/lib/utils/format";
 
 type Props = {
   rows: Array<Record<string, unknown>>;
+  hiddenColumns?: string[];
+  cellRenderers?: Partial<Record<string, (value: unknown, row: Record<string, unknown>) => ReactNode>>;
+  rowActions?: (row: Record<string, unknown>) => ReactNode;
+  rowActionsLabel?: string;
 };
 
 function toTitleCase(value: string): string {
@@ -166,13 +172,21 @@ function stringifyPrimitive(column: string, value: unknown): string {
   return String(value);
 }
 
-export function DataTable({ rows }: Props): React.JSX.Element {
+export function DataTable({
+  rows,
+  hiddenColumns = [],
+  cellRenderers = {},
+  rowActions,
+  rowActionsLabel = "Actions",
+}: Props): React.JSX.Element {
   if (rows.length === 0) {
     return <div className="alert info">No rows returned.</div>;
   }
 
   const allColumns = Object.keys(rows[0]);
-  const columns = allColumns.filter((column) => shouldDisplayColumn(column, allColumns));
+  const columns = allColumns.filter(
+    (column) => !hiddenColumns.includes(column) && shouldDisplayColumn(column, allColumns),
+  );
   return (
     <div className="table-wrap">
       <table>
@@ -181,6 +195,7 @@ export function DataTable({ rows }: Props): React.JSX.Element {
             {columns.map((column) => (
               <th key={column}>{displayColumnName(column)}</th>
             ))}
+            {rowActions ? <th>{rowActionsLabel}</th> : null}
           </tr>
         </thead>
         <tbody>
@@ -188,6 +203,10 @@ export function DataTable({ rows }: Props): React.JSX.Element {
             <tr key={index}>
               {columns.map((column) => {
                 const value = row[column];
+                const renderer = cellRenderers[column];
+                if (renderer) {
+                  return <td key={`${index}-${column}`}>{renderer(value, row)}</td>;
+                }
                 if (typeof value === "object" && value !== null) {
                   return <td key={`${index}-${column}`}>{renderObjectSummary(value)}</td>;
                 }
@@ -203,6 +222,7 @@ export function DataTable({ rows }: Props): React.JSX.Element {
                   </td>
                 );
               })}
+              {rowActions ? <td>{rowActions(row)}</td> : null}
             </tr>
           ))}
         </tbody>

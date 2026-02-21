@@ -435,6 +435,54 @@ export class AuthService {
     );
     return buildPaginatedResult(result.rows, Number(countResult.rows[0].total), listQuery);
   }
+
+  async revokeApiKey(actor: AuthContext, apiKeyId: string): Promise<Record<string, unknown>> {
+    if (actor.role !== "admin") {
+      throw new ApiError(403, "Only admin users can revoke API keys");
+    }
+
+    const existing = await query<{
+      id: string;
+      is_active: boolean;
+      revoked_at: Date | null;
+    }>(
+      `
+      SELECT id, is_active, revoked_at
+      FROM api_keys
+      WHERE id = $1
+      `,
+      [apiKeyId],
+    );
+
+    if (existing.rowCount === 0) {
+      throw new ApiError(404, "API key not found");
+    }
+
+    const row = existing.rows[0];
+    if (row.revoked_at !== null || !row.is_active) {
+      return {
+        id: row.id,
+        is_active: false,
+        revoked_at: row.revoked_at,
+      };
+    }
+
+    const result = await query<{
+      id: string;
+      is_active: boolean;
+      revoked_at: Date;
+    }>(
+      `
+      UPDATE api_keys
+      SET is_active = FALSE, revoked_at = NOW()
+      WHERE id = $1
+      RETURNING id, is_active, revoked_at
+      `,
+      [apiKeyId],
+    );
+
+    return result.rows[0];
+  }
 }
 
 export const authService = new AuthService();

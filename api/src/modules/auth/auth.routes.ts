@@ -45,3 +45,9 @@ authRouter.get(
   authorize("admin"),
   asyncHandler(authController.listApiKeys.bind(authController)),
 );
+authRouter.patch(
+  "/api-keys/:apiKeyId/revoke",
+  authenticate,
+  authorize("admin"),
+  asyncHandler(authController.revokeApiKey.bind(authController)),
+);

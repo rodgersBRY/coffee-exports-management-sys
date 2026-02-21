@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { DataTable } from "@/components/data/DataTable";
@@ -44,6 +45,11 @@ type Props = {
   sortOrder?: "asc" | "desc";
   filters?: FilterConfig[];
   filtersPosition?: "sidebar" | "top";
+  hiddenColumns?: string[];
+  onCreateSuccess?: (result: unknown) => void;
+  cellRenderers?: Partial<Record<string, (value: unknown, row: GenericRow) => ReactNode>>;
+  rowActions?: (row: GenericRow) => ReactNode;
+  rowActionsLabel?: string;
 };
 
 type GenericRow = Record<string, unknown>;
@@ -73,7 +79,12 @@ export function ResourcePanel({
   sortBy,
   sortOrder = "desc",
   filters = [],
-  filtersPosition = "top"
+  filtersPosition = "top",
+  hiddenColumns = [],
+  onCreateSuccess,
+  cellRenderers,
+  rowActions,
+  rowActionsLabel,
 }: Props): React.JSX.Element {
   const queryClient = useQueryClient();
   const notify = useToastStore((state) => state.push);
@@ -127,9 +138,10 @@ export function ResourcePanel({
         body: payload
       });
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       notify({ type: "success", message: `${title} created` });
       setFormState(Object.fromEntries(createFields.map((field) => [field.name, ""])));
+      onCreateSuccess?.(result);
       void queryClient.invalidateQueries({ queryKey: ["list", listEndpoint] });
     },
     onError: (error) => {
@@ -292,7 +304,13 @@ export function ResourcePanel({
               <div className="alert info">Loading...</div>
             ) : (
               <>
-                <DataTable rows={(listQuery.data?.data ?? []) as GenericRow[]} />
+                <DataTable
+                  rows={(listQuery.data?.data ?? []) as GenericRow[]}
+                  hiddenColumns={hiddenColumns}
+                  cellRenderers={cellRenderers}
+                  rowActions={rowActions}
+                  rowActionsLabel={rowActionsLabel}
+                />
                 {listQuery.data ? (
                   <PaginationBar
                     page={listQuery.data.meta.page}
@@ -397,7 +415,13 @@ export function ResourcePanel({
               <div className="alert info">Loading...</div>
             ) : (
               <>
-                <DataTable rows={(listQuery.data?.data ?? []) as GenericRow[]} />
+                <DataTable
+                  rows={(listQuery.data?.data ?? []) as GenericRow[]}
+                  hiddenColumns={hiddenColumns}
+                  cellRenderers={cellRenderers}
+                  rowActions={rowActions}
+                  rowActionsLabel={rowActionsLabel}
+                />
                 {listQuery.data ? (
                   <PaginationBar
                     page={listQuery.data.meta.page}

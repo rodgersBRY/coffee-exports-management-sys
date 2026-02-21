@@ -103,6 +103,19 @@ export class AuthController {
     const keys = await authService.listApiKeys(req.auth, query);
     res.json(keys);
   }
+
+  async revokeApiKey(req: Request, res: Response): Promise<void> {
+    if (!req.auth) {
+      throw new ApiError(401, "Authentication required");
+    }
+    const apiKeyId = String(req.params.apiKeyId ?? "").trim();
+    if (!apiKeyId) {
+      throw new ApiError(400, "apiKeyId is required");
+    }
+
+    const revoked = await authService.revokeApiKey(req.auth, apiKeyId);
+    res.json(revoked);
+  }
 }
 
 export const authController = new AuthController();

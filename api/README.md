@@ -248,6 +248,7 @@ npm run prisma:migrate:deploy
 - `GET /api/v1/auth/users`
 - `POST /api/v1/auth/api-keys` (admin)
 - `GET /api/v1/auth/api-keys` (admin)
+- `PATCH /api/v1/auth/api-keys/:apiKeyId/revoke` (admin)
 - `POST /api/v1/master/suppliers`
 - `GET /api/v1/master/suppliers`
 - `POST /api/v1/master/buyers`
