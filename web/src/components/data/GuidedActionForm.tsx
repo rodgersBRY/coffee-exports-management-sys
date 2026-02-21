@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 
+import { ActionResultView } from "@/components/data/ActionResultView";
 import { SearchableSelectControl } from "@/components/data/SearchableSelectControl";
 import { Card } from "@/components/ui/Card";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
@@ -151,7 +152,7 @@ export function GuidedActionForm({
   const [pathState, setPathState] = useState<Record<string, FieldState>>(() => defaultState(pathFields));
   const [bodyState, setBodyState] = useState<Record<string, FieldState>>(() => defaultState(bodyFields));
   const [queryState, setQueryState] = useState<Record<string, FieldState>>(() => defaultState(queryFields));
-  const [responseBody, setResponseBody] = useState("");
+  const [responseData, setResponseData] = useState<unknown | null>(null);
 
   const hasForm = pathFields.length + bodyFields.length + queryFields.length > 0;
 
@@ -192,7 +193,7 @@ export function GuidedActionForm({
       });
     },
     onSuccess: (result) => {
-      setResponseBody(JSON.stringify(result ?? { ok: true }, null, 2));
+      setResponseData(result ?? { ok: true });
       notify({ type: "success", message: successMessage });
     },
     onError: (error) => {
@@ -371,12 +372,7 @@ export function GuidedActionForm({
 
         {!hasForm ? <div className="alert info">No fields are configured for this operation.</div> : null}
 
-        {responseBody ? (
-          <label>
-            Result
-            <textarea className="mono" rows={10} readOnly value={responseBody} />
-          </label>
-        ) : null}
+        {responseData !== null ? <ActionResultView value={responseData} /> : null}
       </form>
     </Card>
   );

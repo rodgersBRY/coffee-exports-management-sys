@@ -60,6 +60,7 @@ export default function ShipmentsPage(): React.JSX.Element {
                 pathTemplate="shipments/{shipment_id}/status"
                 pathFields={buildShipmentRecordFields(options)}
                 bodyFields={shipmentStatusFields}
+                method="PATCH"
               />
             )
           },

@@ -433,6 +433,23 @@ tbody tr:nth-child(even) {
   @apply min-w-0;
 }
 
+.result-grid {
+  @apply grid grid-cols-1 gap-2 rounded-lg border border-[#d8c9ae] bg-[#fdf9f1] p-3 md:grid-cols-2;
+}
+
+.result-grid dt {
+  color: var(--coffee-brown);
+  @apply text-xs font-semibold uppercase tracking-wide;
+}
+
+.result-grid dd {
+  @apply m-0 text-sm text-[#2f2f2f];
+}
+
+.result-pre {
+  @apply overflow-auto rounded-md border border-[#d6c7ab] bg-[#fffdfa] p-3 text-xs;
+}
+
 .toast-stack {
   @apply fixed bottom-3 right-3 z-40 flex flex-col gap-2;
 }

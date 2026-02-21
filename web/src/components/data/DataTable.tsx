@@ -1,4 +1,4 @@
-import { formatJson } from "@/lib/utils/format";
+import { formatDateForDisplay, formatJson, isLikelyDateColumn } from "@/lib/utils/format";
 
 type Props = {
   rows: Array<Record<string, unknown>>;
@@ -101,6 +101,20 @@ function renderTag(column: string, value: string): React.JSX.Element | null {
 function stringifyPrimitive(column: string, value: unknown): string {
   if (value === null || value === undefined) {
     return "";
+  }
+
+  if (isLikelyDateColumn(column)) {
+    const formatted = formatDateForDisplay(value);
+    if (formatted) {
+      return formatted;
+    }
+  }
+
+  if (typeof value === "string") {
+    const formatted = formatDateForDisplay(value);
+    if (formatted) {
+      return formatted;
+    }
   }
 
   if (typeof value === "number" && Number.isFinite(value)) {
