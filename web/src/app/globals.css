@@ -290,6 +290,10 @@ td {
   word-break: break-word;
 }
 
+.cell-summary {
+  @apply flex flex-wrap gap-1;
+}
+
 tbody tr:nth-child(even) {
   @apply bg-[#fbf7ef];
 }

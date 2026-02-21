@@ -1,4 +1,4 @@
-import { formatDateForDisplay, formatJson, isLikelyDateColumn } from "@/lib/utils/format";
+import { formatDateForDisplay, isLikelyDateColumn } from "@/lib/utils/format";
 
 type Props = {
   rows: Array<Record<string, unknown>>;
@@ -98,6 +98,34 @@ function renderTag(column: string, value: string): React.JSX.Element | null {
   return null;
 }
 
+function renderObjectSummary(value: unknown): React.JSX.Element {
+  if (Array.isArray(value)) {
+    return <span className="tag">Items: {value.length}</span>;
+  }
+
+  if (typeof value === "object" && value !== null) {
+    const entries = Object.entries(value)
+      .filter(([, entry]) => entry === null || ["string", "number", "boolean"].includes(typeof entry))
+      .slice(0, 3);
+
+    if (entries.length === 0) {
+      return <span className="tag">Record</span>;
+    }
+
+    return (
+      <div className="cell-summary">
+        {entries.map(([key, entry]) => (
+          <span key={key} className="tag">
+            {toTitleCase(key)}: {String(entry)}
+          </span>
+        ))}
+      </div>
+    );
+  }
+
+  return <span className="tag">Value</span>;
+}
+
 function stringifyPrimitive(column: string, value: unknown): string {
   if (value === null || value === undefined) {
     return "";
@@ -161,11 +189,7 @@ export function DataTable({ rows }: Props): React.JSX.Element {
               {columns.map((column) => {
                 const value = row[column];
                 if (typeof value === "object" && value !== null) {
-                  return (
-                    <td key={`${index}-${column}`} className="mono cell-json">
-                      {formatJson(value)}
-                    </td>
-                  );
+                  return <td key={`${index}-${column}`}>{renderObjectSummary(value)}</td>;
                 }
 
                 const primitiveValue = stringifyPrimitive(column, value);

@@ -1,7 +1,6 @@
 "use client";
 
 import { DataTable } from "@/components/data/DataTable";
-import { formatJson } from "@/lib/utils/format";
 
 type Props = {
   value: unknown;
@@ -23,6 +22,14 @@ function isObjectArray(value: unknown): value is Array<Record<string, unknown>> 
   return Array.isArray(value) && value.every((item) => isRecord(item));
 }
 
+function isPrimitive(value: unknown): boolean {
+  return value === null || ["string", "number", "boolean"].includes(typeof value);
+}
+
+function isPrimitiveArray(value: unknown): value is Array<string | number | boolean | null> {
+  return Array.isArray(value) && value.every((item) => isPrimitive(item));
+}
+
 function isPaginated(value: unknown): value is { data: unknown[]; meta: Record<string, unknown> } {
   return isRecord(value) && Array.isArray(value.data) && isRecord(value.meta);
 }
@@ -38,8 +45,8 @@ function renderPrimitive(value: unknown): string {
 }
 
 function renderKeyValueCard(value: Record<string, unknown>): React.JSX.Element {
-  const scalarEntries = Object.entries(value).filter(([, entry]) => !isRecord(entry) && !Array.isArray(entry));
-  const nestedEntries = Object.entries(value).filter(([, entry]) => isRecord(entry) || Array.isArray(entry));
+  const scalarEntries = Object.entries(value).filter(([, entry]) => isPrimitive(entry));
+  const nestedEntries = Object.entries(value).filter(([, entry]) => !isPrimitive(entry));
 
   return (
     <div className="stack">
@@ -60,11 +67,7 @@ function renderKeyValueCard(value: Record<string, unknown>): React.JSX.Element {
             <details key={key} className="collapsible">
               <summary>{toTitleCase(key)}</summary>
               <div className="content">
-                {isObjectArray(entry) ? (
-                  <DataTable rows={entry} />
-                ) : (
-                  <pre className="mono result-pre">{formatJson(entry)}</pre>
-                )}
+                {renderFriendlyValue(entry)}
               </div>
             </details>
           ))}
@@ -72,6 +75,34 @@ function renderKeyValueCard(value: Record<string, unknown>): React.JSX.Element {
       ) : null}
     </div>
   );
+}
+
+function renderFriendlyValue(value: unknown): React.JSX.Element {
+  if (isObjectArray(value)) {
+    return <DataTable rows={value} />;
+  }
+
+  if (isRecord(value)) {
+    return renderKeyValueCard(value);
+  }
+
+  if (isPrimitiveArray(value)) {
+    return (
+      <div className="inline">
+        {value.map((entry, index) => (
+          <span key={`${index}-${String(entry)}`} className="tag">
+            {renderPrimitive(entry)}
+          </span>
+        ))}
+      </div>
+    );
+  }
+
+  if (Array.isArray(value)) {
+    return <div className="alert info">Items: {value.length}</div>;
+  }
+
+  return <div className="alert info">{renderPrimitive(value)}</div>;
 }
 
 export function ActionResultView({ value }: Props): React.JSX.Element {
@@ -89,27 +120,12 @@ export function ActionResultView({ value }: Props): React.JSX.Element {
           {isObjectArray(value.data) ? (
             <DataTable rows={value.data} />
           ) : (
-            <pre className="mono result-pre">{formatJson(value.data)}</pre>
+            renderFriendlyValue(value.data)
           )}
         </div>
-      ) : Array.isArray(value) ? (
-        isObjectArray(value) ? (
-          <DataTable rows={value} />
-        ) : (
-          <pre className="mono result-pre">{formatJson(value)}</pre>
-        )
-      ) : isRecord(value) ? (
-        renderKeyValueCard(value)
       ) : (
-        <div className="alert info">{renderPrimitive(value)}</div>
+        renderFriendlyValue(value)
       )}
-
-      <details className="collapsible">
-        <summary>View raw response</summary>
-        <div className="content">
-          <pre className="mono result-pre">{formatJson(value)}</pre>
-        </div>
-      </details>
     </div>
   );
 }
