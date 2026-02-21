@@ -159,3 +159,51 @@ export function buildDirectDeliveryFields(options: ProcurementFieldOptions): Gui
     { name: "transport_cost_total", label: "Transport cost total", type: "number" }
   ];
 }
+
+export function buildAuctionLotFilters(options: ProcurementFieldOptions): FilterConfig[] {
+  return [
+    {
+      name: "marketing_agent_id",
+      label: "Auction marketing agent / broker",
+      type: "search-select",
+      options: options.marketingAgents
+    },
+    { name: "grade_id", label: "Grade", type: "search-select", options: options.grades },
+    { name: "warehouse_id", label: "Warehouse", type: "search-select", options: options.warehouses },
+    { name: "crop_year", label: "Crop year" },
+    {
+      name: "status",
+      label: "Status",
+      type: "select",
+      options: [
+        { label: "In stock", value: "in_stock" },
+        { label: "Allocated", value: "allocated" },
+        { label: "Picked", value: "picked" },
+        { label: "Stuffed", value: "stuffed" },
+        { label: "Shipped", value: "shipped" }
+      ]
+    }
+  ];
+}
+
+export function buildDirectDeliveryFilters(options: ProcurementFieldOptions): FilterConfig[] {
+  return [
+    { name: "supplier_id", label: "Direct supplier", type: "search-select", options: options.suppliers },
+    { name: "agreement_id", label: "Direct agreement", type: "search-select", options: options.agreements },
+    { name: "grade_id", label: "Grade", type: "search-select", options: options.grades },
+    { name: "warehouse_id", label: "Warehouse", type: "search-select", options: options.warehouses },
+    { name: "crop_year", label: "Crop year" },
+    {
+      name: "status",
+      label: "Status",
+      type: "select",
+      options: [
+        { label: "In stock", value: "in_stock" },
+        { label: "Allocated", value: "allocated" },
+        { label: "Picked", value: "picked" },
+        { label: "Stuffed", value: "stuffed" },
+        { label: "Shipped", value: "shipped" }
+      ]
+    }
+  ];
+}

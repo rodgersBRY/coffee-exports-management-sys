@@ -17,10 +17,12 @@ Handles inbound lot creation from both procurement channels:
 ## Endpoints
 
 - `POST /api/v1/procurement/auction-lots`
+- `GET /api/v1/procurement/auction-lots`
 - `POST /api/v1/procurement/direct-agreements`
 - `GET /api/v1/procurement/direct-agreements`
 - `GET /api/v1/procurement/reference-data`
 - `POST /api/v1/procurement/direct-deliveries`
+- `GET /api/v1/procurement/direct-deliveries`
 
 ## Configuration Notes
 

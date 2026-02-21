@@ -131,12 +131,13 @@ export function OperationsOverview(): React.JSX.Element {
           <div className="card">
             <h3>Contract Signals</h3>
             <p>Track fulfillment and unallocated commitments approaching shipment windows.</p>
-            <div className="inline">
+            <div className="inline my-4">
               <span className="tag">Open contracts: {openContracts}</span>
               <span className={`tag ${riskCount > 0 ? "tag-status-risk" : "tag-status-good"}`}>
                 Risk alerts: {riskCount}
               </span>
             </div>
+
             <div className="stack">
               {(contractsQuery.data?.risk_alerts ?? []).slice(0, 4).map((alert) => (
                 <div className="alert error" key={`${alert.contract_number}-${alert.issue}`}>

@@ -222,6 +222,179 @@ export class ProcurementService {
     return buildPaginatedResult(result.rows, Number(countResult.rows[0].total), listQuery);
   }
 
+  async listAuctionLots(listQuery: ListQueryParams): Promise<unknown> {
+    const whereClauses: string[] = ["l.source = 'auction'"];
+    const values: unknown[] = [];
+    const marketingAgentId = toIntFilter(listQuery.filters, "marketing_agent_id");
+    const gradeId = toIntFilter(listQuery.filters, "grade_id");
+    const warehouseId = toIntFilter(listQuery.filters, "warehouse_id");
+
+    if (listQuery.search) {
+      values.push(`%${escapeLikeQuery(listQuery.search)}%`);
+      whereClauses.push(
+        `(ap.auction_lot_number ILIKE $${values.length} ESCAPE '\\' OR s.name ILIKE $${values.length} ESCAPE '\\' OR l.lot_code ILIKE $${values.length} ESCAPE '\\')`,
+      );
+    }
+    if (marketingAgentId) {
+      values.push(marketingAgentId);
+      whereClauses.push(`ap.marketing_agent_id = $${values.length}`);
+    }
+    if (gradeId) {
+      values.push(gradeId);
+      whereClauses.push(`l.grade_id = $${values.length}`);
+    }
+    if (warehouseId) {
+      values.push(warehouseId);
+      whereClauses.push(`l.warehouse_id = $${values.length}`);
+    }
+    if (listQuery.filters.crop_year) {
+      values.push(listQuery.filters.crop_year);
+      whereClauses.push(`l.crop_year = $${values.length}`);
+    }
+    if (listQuery.filters.status) {
+      values.push(listQuery.filters.status);
+      whereClauses.push(`l.status = $${values.length}`);
+    }
+
+    const whereSql = `WHERE ${whereClauses.join(" AND ")}`;
+    const countResult = await query<{ total: number }>(
+      `
+      SELECT COUNT(*)::int AS total
+      FROM lots l
+      JOIN auction_procurements ap ON ap.lot_id = l.id
+      JOIN suppliers s ON s.id = ap.marketing_agent_id
+      ${whereSql}
+      `,
+      values,
+    );
+
+    values.push(listQuery.pageSize, listQuery.offset);
+    const result = await query(
+      `
+      SELECT
+        l.id,
+        ap.auction_lot_number,
+        s.name AS marketing_agent,
+        g.code AS grade,
+        w.name AS warehouse,
+        bt.name AS bag_type,
+        l.crop_year,
+        l.bags_total AS bags,
+        l.weight_total_kg,
+        l.weight_available_kg,
+        l.purchase_price_per_kg,
+        l.auction_fees_total,
+        l.status,
+        l.created_at
+      FROM lots l
+      JOIN auction_procurements ap ON ap.lot_id = l.id
+      JOIN suppliers s ON s.id = ap.marketing_agent_id
+      JOIN grades g ON g.id = l.grade_id
+      JOIN warehouses w ON w.id = l.warehouse_id
+      JOIN bag_types bt ON bt.id = l.bag_type_id
+      ${whereSql}
+      ORDER BY ${listQuery.sortBy} ${listQuery.sortOrder}
+      LIMIT $${values.length - 1} OFFSET $${values.length}
+      `,
+      values,
+    );
+
+    return buildPaginatedResult(result.rows, Number(countResult.rows[0].total), listQuery);
+  }
+
+  async listDirectDeliveries(listQuery: ListQueryParams): Promise<unknown> {
+    const whereClauses: string[] = ["l.source = 'direct'"];
+    const values: unknown[] = [];
+    const supplierId = toIntFilter(listQuery.filters, "supplier_id");
+    const agreementId = toIntFilter(listQuery.filters, "agreement_id");
+    const gradeId = toIntFilter(listQuery.filters, "grade_id");
+    const warehouseId = toIntFilter(listQuery.filters, "warehouse_id");
+
+    if (listQuery.search) {
+      values.push(`%${escapeLikeQuery(listQuery.search)}%`);
+      whereClauses.push(
+        `(dd.delivery_reference ILIKE $${values.length} ESCAPE '\\' OR l.lot_code ILIKE $${values.length} ESCAPE '\\' OR da.agreement_reference ILIKE $${values.length} ESCAPE '\\' OR s.name ILIKE $${values.length} ESCAPE '\\')`,
+      );
+    }
+    if (supplierId) {
+      values.push(supplierId);
+      whereClauses.push(`da.supplier_id = $${values.length}`);
+    }
+    if (agreementId) {
+      values.push(agreementId);
+      whereClauses.push(`dd.agreement_id = $${values.length}`);
+    }
+    if (gradeId) {
+      values.push(gradeId);
+      whereClauses.push(`l.grade_id = $${values.length}`);
+    }
+    if (warehouseId) {
+      values.push(warehouseId);
+      whereClauses.push(`l.warehouse_id = $${values.length}`);
+    }
+    if (listQuery.filters.crop_year) {
+      values.push(listQuery.filters.crop_year);
+      whereClauses.push(`l.crop_year = $${values.length}`);
+    }
+    if (listQuery.filters.status) {
+      values.push(listQuery.filters.status);
+      whereClauses.push(`l.status = $${values.length}`);
+    }
+
+    const whereSql = `WHERE ${whereClauses.join(" AND ")}`;
+    const countResult = await query<{ total: number }>(
+      `
+      SELECT COUNT(*)::int AS total
+      FROM direct_deliveries dd
+      JOIN lots l ON l.id = dd.lot_id
+      JOIN direct_agreements da ON da.id = dd.agreement_id
+      JOIN suppliers s ON s.id = da.supplier_id
+      ${whereSql}
+      `,
+      values,
+    );
+
+    values.push(listQuery.pageSize, listQuery.offset);
+    const result = await query(
+      `
+      SELECT
+        dd.id,
+        dd.delivery_reference,
+        l.lot_code,
+        da.id AS agreement,
+        da.agreement_reference,
+        s.name AS supplier,
+        g.code AS grade,
+        w.name AS warehouse,
+        bt.name AS bag_type,
+        l.crop_year,
+        l.bags_total AS bags,
+        l.weight_total_kg,
+        l.weight_available_kg,
+        da.agreed_price_per_kg,
+        dd.moisture_percent,
+        dd.screen_size,
+        dd.defects_percent,
+        l.status,
+        dd.received_at,
+        dd.created_at
+      FROM direct_deliveries dd
+      JOIN lots l ON l.id = dd.lot_id
+      JOIN direct_agreements da ON da.id = dd.agreement_id
+      JOIN suppliers s ON s.id = da.supplier_id
+      JOIN grades g ON g.id = l.grade_id
+      JOIN warehouses w ON w.id = l.warehouse_id
+      JOIN bag_types bt ON bt.id = l.bag_type_id
+      ${whereSql}
+      ORDER BY ${listQuery.sortBy} ${listQuery.sortOrder}
+      LIMIT $${values.length - 1} OFFSET $${values.length}
+      `,
+      values,
+    );
+
+    return buildPaginatedResult(result.rows, Number(countResult.rows[0].total), listQuery);
+  }
+
   async getReferenceData(): Promise<unknown> {
     const [suppliersResult, marketingAgentsResult, warehousesResult, gradesResult, bagTypesResult, agreementsResult] =
       await Promise.all([

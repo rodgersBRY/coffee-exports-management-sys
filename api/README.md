@@ -259,9 +259,11 @@ npm run prisma:migrate:deploy
 - `POST /api/v1/master/bag-types`
 - `GET /api/v1/master/bag-types`
 - `POST /api/v1/procurement/auction-lots`
+- `GET /api/v1/procurement/auction-lots`
 - `POST /api/v1/procurement/direct-agreements`
 - `GET /api/v1/procurement/direct-agreements`
 - `POST /api/v1/procurement/direct-deliveries`
+- `GET /api/v1/procurement/direct-deliveries`
 - `GET /api/v1/inventory/lots`
 - `POST /api/v1/inventory/adjustments`
 - `GET /api/v1/inventory/dashboard`

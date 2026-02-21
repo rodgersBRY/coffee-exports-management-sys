@@ -9,6 +9,10 @@ procurementRouter.post(
   "/auction-lots",
   asyncHandler(procurementController.createAuctionLot.bind(procurementController)),
 );
+procurementRouter.get(
+  "/auction-lots",
+  asyncHandler(procurementController.listAuctionLots.bind(procurementController)),
+);
 procurementRouter.post(
   "/direct-agreements",
   asyncHandler(procurementController.createDirectAgreement.bind(procurementController)),
@@ -24,4 +28,8 @@ procurementRouter.get(
 procurementRouter.post(
   "/direct-deliveries",
   asyncHandler(procurementController.createDirectDelivery.bind(procurementController)),
+);
+procurementRouter.get(
+  "/direct-deliveries",
+  asyncHandler(procurementController.listDirectDeliveries.bind(procurementController)),
 );
