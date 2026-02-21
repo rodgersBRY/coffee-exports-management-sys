@@ -27,6 +27,18 @@ const dbSslRejectUnauthorized = process.env.DB_SSL_REJECT_UNAUTHORIZED !== "fals
 const dbSslCaPath = process.env.DB_SSL_CA_PATH;
 const logLevel = process.env.LOG_LEVEL ?? "info";
 const trustProxyRaw = process.env.TRUST_PROXY ?? "true";
+const sendgridApiKey = process.env.SENDGRID_API_KEY;
+const notificationFromEmail = process.env.NOTIFICATION_FROM_EMAIL;
+const notificationAdminEmails = (process.env.NOTIFICATION_ADMIN_EMAILS ?? "")
+  .split(",")
+  .map((value) => value.trim().toLowerCase())
+  .filter(Boolean);
+const notificationsCronEnabled = process.env.NOTIFICATIONS_CRON_ENABLED !== "false";
+const notificationsCronTimezone = process.env.NOTIFICATIONS_CRON_TIMEZONE ?? "UTC";
+const contractRiskCronSchedule = process.env.CONTRACT_RISK_CRON_SCHEDULE ?? "0 7 * * *";
+const contractRiskAlertWindowDays = Number(process.env.CONTRACT_RISK_ALERT_WINDOW_DAYS ?? 7);
+const apiKeyExpiryCronSchedule = process.env.API_KEY_EXPIRY_CRON_SCHEDULE ?? "15 7 * * *";
+const apiKeyExpiryAlertWindowDays = Number(process.env.API_KEY_EXPIRY_ALERT_WINDOW_DAYS ?? 7);
 const trustProxy =
   trustProxyRaw === "true"
     ? true
@@ -64,6 +76,20 @@ if (Number.isNaN(rateLimitWindowMs) || Number.isNaN(rateLimitMax) || Number.isNa
 if (Number.isNaN(idempotencyTtlSeconds) || idempotencyTtlSeconds <= 0) {
   throw new Error("IDEMPOTENCY_TTL_SECONDS must be a positive number");
 }
+if (
+  Number.isNaN(contractRiskAlertWindowDays) ||
+  contractRiskAlertWindowDays <= 0 ||
+  contractRiskAlertWindowDays > 365
+) {
+  throw new Error("CONTRACT_RISK_ALERT_WINDOW_DAYS must be between 1 and 365");
+}
+if (
+  Number.isNaN(apiKeyExpiryAlertWindowDays) ||
+  apiKeyExpiryAlertWindowDays <= 0 ||
+  apiKeyExpiryAlertWindowDays > 365
+) {
+  throw new Error("API_KEY_EXPIRY_ALERT_WINDOW_DAYS must be between 1 and 365");
+}
 
 export const env = {
   port,
@@ -88,4 +114,13 @@ export const env = {
   dbSslCaPath,
   logLevel,
   trustProxy,
+  sendgridApiKey,
+  notificationFromEmail,
+  notificationAdminEmails,
+  notificationsCronEnabled,
+  notificationsCronTimezone,
+  contractRiskCronSchedule,
+  contractRiskAlertWindowDays,
+  apiKeyExpiryCronSchedule,
+  apiKeyExpiryAlertWindowDays,
 };

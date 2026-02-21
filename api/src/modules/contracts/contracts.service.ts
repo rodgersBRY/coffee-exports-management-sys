@@ -12,11 +12,12 @@ import {
   toIntFilter,
 } from "../../common/pagination.js";
 import { query, withTransaction } from "../../db/pool.js";
+import { notificationsService } from "../notifications/notifications.service.js";
 import { AllocationInput, ContractInput } from "./contracts.validation.js";
 
 export class ContractsService {
   async createContract(input: ContractInput): Promise<unknown> {
-    return withTransaction(async (client) => {
+    const created = await withTransaction(async (client) => {
       await ensureReference(client, "buyers", input.buyer_id, "Buyer");
       if (input.grade_id) {
         await ensureReference(client, "grades", input.grade_id, "Grade");
@@ -43,12 +44,27 @@ export class ContractsService {
           input.shipment_window_end,
         ],
       );
-      return result.rows[0];
+      const buyerResult = await client.query("SELECT name FROM buyers WHERE id = $1", [input.buyer_id]);
+      return {
+        contract: result.rows[0],
+        buyerName:
+          buyerResult.rowCount > 0 ? String(buyerResult.rows[0].name) : String(input.buyer_id),
+      };
     });
+
+    await notificationsService.notifyContractCreated({
+      contractNumber: String(created.contract.contract_number),
+      buyerName: created.buyerName,
+      quantityKg: toNumber(created.contract.quantity_kg),
+      shipmentWindowStart: String(created.contract.shipment_window_start),
+      shipmentWindowEnd: String(created.contract.shipment_window_end),
+    });
+
+    return created.contract;
   }
 
   async allocateLot(contractId: number, input: AllocationInput): Promise<unknown> {
-    return withTransaction(async (client) => {
+    const allocated = await withTransaction(async (client) => {
       const contractResult = await client.query("SELECT * FROM contracts WHERE id = $1 FOR UPDATE", [
         contractId,
       ]);
@@ -83,8 +99,8 @@ export class ContractsService {
         [contractId, input.lot_id, input.allocated_kg],
       );
 
-      await client.query(
-        "UPDATE contracts SET allocated_kg = allocated_kg + $1 WHERE id = $2",
+      const updatedContractResult = await client.query(
+        "UPDATE contracts SET allocated_kg = allocated_kg + $1 WHERE id = $2 RETURNING contract_number, allocated_kg, quantity_kg",
         [input.allocated_kg, contractId],
       );
       await client.query(
@@ -92,8 +108,23 @@ export class ContractsService {
         [input.allocated_kg, input.lot_id],
       );
       await refreshLotStatus(client, input.lot_id);
-      return insertResult.rows[0];
+      const updatedContract = updatedContractResult.rows[0];
+      return {
+        allocation: insertResult.rows[0],
+        contractNumber: String(updatedContract.contract_number),
+        allocatedKg: toNumber(updatedContract.allocated_kg),
+        quantityKg: toNumber(updatedContract.quantity_kg),
+      };
     });
+
+    if (allocated.allocatedKg + EPSILON >= allocated.quantityKg) {
+      await notificationsService.notifyContractFullyAllocated({
+        contractNumber: allocated.contractNumber,
+        allocatedKg: allocated.allocatedKg,
+      });
+    }
+
+    return allocated.allocation;
   }
 
   async getDashboard(listQuery: ListQueryParams): Promise<unknown> {

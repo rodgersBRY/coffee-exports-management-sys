@@ -8,6 +8,7 @@ import {
   registerPoolEventLogging,
   verifyDatabaseConnection,
 } from "./db/pool.js";
+import { registerNotificationCrons } from "./modules/notifications/notifications.cron.js";
 
 const app = createApp();
 
@@ -18,6 +19,7 @@ async function bootstrap(): Promise<void> {
 
   await seedInitialUsersIfEmpty();
   await seedStandardBagTypesIfMissing();
+  registerNotificationCrons();
 
   const server = app.listen(env.port, () => {
     logger.info(`CEOMS API running on http://localhost:${env.port}`);

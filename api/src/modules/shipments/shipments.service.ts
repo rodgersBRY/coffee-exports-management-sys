@@ -16,10 +16,11 @@ import {
   ShipmentCreateInput,
   ShipmentStatusInput,
 } from "./shipments.validation.js";
+import { notificationsService } from "../notifications/notifications.service.js";
 
 export class ShipmentsService {
   async createShipment(input: ShipmentCreateInput): Promise<unknown> {
-    return withTransaction(async (client) => {
+    const created = await withTransaction(async (client) => {
       const contractResult = await client.query("SELECT * FROM contracts WHERE id = $1 FOR UPDATE", [
         input.contract_id,
       ]);
@@ -148,12 +149,32 @@ export class ShipmentsService {
       const finalShipment = await client.query("SELECT * FROM shipments WHERE id = $1", [
         createdShipment.id,
       ]);
-      return finalShipment.rows[0];
+      const lotCodes = Array.from(
+        new Set(
+          lotsForSnapshotResult.rows
+            .map((row: Record<string, unknown>) => String(row.lot_code ?? ""))
+            .filter((value) => value.length > 0),
+        ),
+      );
+
+      return {
+        shipment: finalShipment.rows[0],
+        contractNumber: String(contract.contract_number),
+        lotCodes,
+      };
     });
+
+    await notificationsService.notifyShipmentCreated({
+      shipmentNumber: String(created.shipment.shipment_number),
+      contractNumber: created.contractNumber,
+      lotCodes: created.lotCodes,
+    });
+
+    return created.shipment;
   }
 
   async updateStatus(shipmentId: number, input: ShipmentStatusInput): Promise<unknown> {
-    return withTransaction(async (client) => {
+    const updated = await withTransaction(async (client) => {
       const shipmentResult = await client.query("SELECT * FROM shipments WHERE id = $1 FOR UPDATE", [
         shipmentId,
       ]);
@@ -176,12 +197,36 @@ export class ShipmentsService {
         `,
         [input.status, input.actual_departure ?? null, shipmentId],
       );
-      return result.rows[0];
+      const updatedShipment = result.rows[0];
+
+      const contractResult = await client.query(
+        "SELECT contract_number FROM contracts WHERE id = $1",
+        [updatedShipment.contract_id],
+      );
+
+      return {
+        shipment: updatedShipment,
+        contractNumber:
+          contractResult.rowCount > 0
+            ? String(contractResult.rows[0].contract_number)
+            : String(updatedShipment.contract_id),
+      };
     });
+
+    await notificationsService.notifyShipmentStatusChanged({
+      shipmentNumber: String(updated.shipment.shipment_number),
+      contractNumber: updated.contractNumber,
+      newStatus: input.status,
+      actualDeparture: updated.shipment.actual_departure
+        ? String(updated.shipment.actual_departure)
+        : null,
+    });
+
+    return updated.shipment;
   }
 
   async generateDocuments(shipmentId: number, input: DocsGenerateInput): Promise<unknown[]> {
-    return withTransaction(async (client) => {
+    const generated = await withTransaction(async (client) => {
       const shipmentResult = await client.query("SELECT * FROM shipments WHERE id = $1", [
         shipmentId,
       ]);
@@ -285,8 +330,23 @@ export class ShipmentsService {
         );
         createdDocs.push(insertResult.rows[0]);
       }
-      return createdDocs;
+      return {
+        documents: createdDocs,
+        shipmentNumber: String(shipment.shipment_number),
+        contractNumber: String(contract.contract_number),
+        buyerName: String(buyer.name),
+        docTypes: input.doc_types,
+      };
     });
+
+    await notificationsService.notifyDocumentsReady({
+      shipmentNumber: generated.shipmentNumber,
+      contractNumber: generated.contractNumber,
+      buyerName: generated.buyerName,
+      docTypes: generated.docTypes,
+    });
+
+    return generated.documents;
   }
 
   async listDocuments(shipmentId: number, listQuery: ListQueryParams): Promise<unknown> {

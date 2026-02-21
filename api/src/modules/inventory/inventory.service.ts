@@ -7,6 +7,7 @@ import {
   toIntFilter,
 } from "../../common/pagination.js";
 import { query, withTransaction } from "../../db/pool.js";
+import { notificationsService } from "../notifications/notifications.service.js";
 import { StockAdjustmentInput } from "./inventory.validation.js";
 
 export class InventoryService {
@@ -91,7 +92,7 @@ export class InventoryService {
   }
 
   async adjustStock(input: StockAdjustmentInput): Promise<unknown> {
-    return withTransaction(async (client) => {
+    const adjustment = await withTransaction(async (client) => {
       const lotResult = await client.query("SELECT * FROM lots WHERE id = $1 FOR UPDATE", [
         input.lot_id,
       ]);
@@ -124,8 +125,20 @@ export class InventoryService {
         `,
         [input.lot_id, input.adjustment_kg, input.reason, input.approved_by],
       );
-      return insertResult.rows[0];
+      return {
+        adjustment: insertResult.rows[0],
+        lotCode: String(lot.lot_code),
+      };
     });
+
+    await notificationsService.notifyStockAdjusted({
+      lotCode: adjustment.lotCode,
+      adjustmentKg: input.adjustment_kg,
+      reason: input.reason,
+      approvedBy: input.approved_by,
+    });
+
+    return adjustment.adjustment;
   }
 
   async getDashboard(): Promise<unknown> {
