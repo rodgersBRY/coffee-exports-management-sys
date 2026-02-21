@@ -17,6 +17,7 @@ Current modules:
 - `shipments`
 - `finance`
 - `traceability`
+- `notifications`
 
 Shared API standards across modules:
 

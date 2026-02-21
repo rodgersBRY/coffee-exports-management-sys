@@ -48,7 +48,9 @@ export class ContractsService {
       return {
         contract: result.rows[0],
         buyerName:
-          buyerResult.rowCount > 0 ? String(buyerResult.rows[0].name) : String(input.buyer_id),
+          (buyerResult.rowCount ?? 0) > 0
+            ? String(buyerResult.rows[0].name)
+            : String(input.buyer_id),
       };
     });
 

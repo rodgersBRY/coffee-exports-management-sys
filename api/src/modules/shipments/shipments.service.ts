@@ -207,7 +207,7 @@ export class ShipmentsService {
       return {
         shipment: updatedShipment,
         contractNumber:
-          contractResult.rowCount > 0
+          (contractResult.rowCount ?? 0) > 0
             ? String(contractResult.rows[0].contract_number)
             : String(updatedShipment.contract_id),
       };

@@ -80,6 +80,9 @@ Each module has its own `README.md` under `src/modules/<module>/README.md`.
   - Contract profitability endpoint
 - Traceability:
   - Backward/forward traceability endpoint per lot
+- Notifications:
+  - Email alerts for key operational events
+  - Scheduled contract risk and API-key-expiry alerts
 
 ## Quick start
 
@@ -119,6 +122,20 @@ npm run dev
 
 API runs at `http://localhost:4000`.
 Versioned endpoints are served under `/api/v1/*`.
+
+## Notification configuration
+
+Set these in `.env` to enable email notifications and daily alerts:
+
+- `SENDGRID_API_KEY`
+- `NOTIFICATION_FROM_EMAIL`
+- `NOTIFICATION_ADMIN_EMAILS` (comma-separated)
+- `NOTIFICATIONS_CRON_ENABLED` (`true`/`false`)
+- `NOTIFICATIONS_CRON_TIMEZONE` (for example `UTC`)
+- `CONTRACT_RISK_CRON_SCHEDULE` (default `0 7 * * *`)
+- `CONTRACT_RISK_ALERT_WINDOW_DAYS` (default `7`)
+- `API_KEY_EXPIRY_CRON_SCHEDULE` (default `15 7 * * *`)
+- `API_KEY_EXPIRY_ALERT_WINDOW_DAYS` (default `7`)
 
 ## First-run default users
 
