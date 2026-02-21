@@ -21,6 +21,7 @@ import {
 
 export default function ProcurementPage(): React.JSX.Element {
   const [showAuctionForm, setShowAuctionForm] = useState(false);
+  const [showAgreementForm, setShowAgreementForm] = useState(false);
   const [showDeliveryForm, setShowDeliveryForm] = useState(false);
 
   const referenceQuery = useQuery({
@@ -87,15 +88,26 @@ export default function ProcurementPage(): React.JSX.Element {
             label: "Direct Agreements",
             hint: "Supplier contracts",
             content: (
-              <ResourcePanel
-                title="Direct Agreements"
-                description="Create and list direct procurement agreements."
-                listEndpoint="procurement/direct-agreements"
-                createEndpoint="procurement/direct-agreements"
-                createFields={buildDirectAgreementFields(options)}
-                sortBy="created_at"
-                filters={buildDirectAgreementFilters(options)}
-              />
+              <div className="stack">
+                <div className="inline">
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => setShowAgreementForm((previous) => !previous)}
+                  >
+                    {showAgreementForm ? "Hide agreement form" : "Add direct agreement"}
+                  </button>
+                </div>
+                <ResourcePanel
+                  title="Direct Agreements"
+                  description="Create and list direct procurement agreements."
+                  listEndpoint="procurement/direct-agreements"
+                  createEndpoint={showAgreementForm ? "procurement/direct-agreements" : undefined}
+                  createFields={showAgreementForm ? buildDirectAgreementFields(options) : undefined}
+                  sortBy="created_at"
+                  filters={buildDirectAgreementFilters(options)}
+                />
+              </div>
             ),
           },
           {
