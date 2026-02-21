@@ -27,7 +27,7 @@ const dbSslRejectUnauthorized = process.env.DB_SSL_REJECT_UNAUTHORIZED !== "fals
 const dbSslCaPath = process.env.DB_SSL_CA_PATH;
 const logLevel = process.env.LOG_LEVEL ?? "info";
 const trustProxyRaw = process.env.TRUST_PROXY ?? "true";
-const sendgridApiKey = process.env.SENDGRID_API_KEY;
+const resendApiKey = process.env.RESEND_API_KEY;
 const notificationFromEmail = process.env.NOTIFICATION_FROM_EMAIL;
 const notificationAdminEmails = (process.env.NOTIFICATION_ADMIN_EMAILS ?? "")
   .split(",")
@@ -114,7 +114,7 @@ export const env = {
   dbSslCaPath,
   logLevel,
   trustProxy,
-  sendgridApiKey,
+  resendApiKey,
   notificationFromEmail,
   notificationAdminEmails,
   notificationsCronEnabled,

@@ -1,4 +1,4 @@
-import sgMail from "@sendgrid/mail";
+import { Resend } from "resend";
 
 import { logger } from "../../common/logger.js";
 import { env } from "../../config/env.js";
@@ -34,17 +34,15 @@ const statusRecipients: Partial<Record<ShipmentStatus, NotificationRecipientRole
 
 export class NotificationService {
   private readonly adminEmails: string[];
+  private readonly resend: Resend | null;
 
   constructor() {
     this.adminEmails = env.notificationAdminEmails;
-
-    if (env.sendgridApiKey) {
-      sgMail.setApiKey(env.sendgridApiKey);
-    }
+    this.resend = env.resendApiKey ? new Resend(env.resendApiKey) : null;
 
     if (!this.isEmailConfigured()) {
       logger.warn("Notification email is disabled due to missing configuration", {
-        has_sendgrid_key: Boolean(env.sendgridApiKey),
+        has_resend_key: Boolean(env.resendApiKey),
         has_from_email: Boolean(env.notificationFromEmail),
         admin_email_count: this.adminEmails.length,
       });
@@ -52,7 +50,7 @@ export class NotificationService {
   }
 
   private isEmailConfigured(): boolean {
-    return Boolean(env.sendgridApiKey && env.notificationFromEmail);
+    return Boolean(env.resendApiKey && env.notificationFromEmail);
   }
 
   private async findUsersByRoles(roles: NotificationRecipientRoles): Promise<string[]> {
@@ -104,7 +102,7 @@ export class NotificationService {
     }
 
     try {
-      await sgMail.sendMultiple({
+      await this.resend!.emails.send({
         to: message.to,
         from: env.notificationFromEmail as string,
         subject: message.subject,
