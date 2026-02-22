@@ -13,6 +13,7 @@
     "prisma:migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
+    "@emailjs/nodejs": "^5.0.2",
     "@prisma/client": "^7.4.0",
     "argon2": "^0.44.0",
     "cookie-parser": "^1.4.7",
@@ -25,7 +26,6 @@
     "morgan": "^1.10.1",
     "node-cron": "^4.2.1",
     "pg": "^8.18.0",
-    "resend": "^6.9.2",
     "winston": "^3.19.0",
     "zod": "^4.3.6"
   },

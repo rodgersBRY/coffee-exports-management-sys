@@ -1,4 +1,4 @@
-import { Resend } from "resend";
+import emailjs from "@emailjs/nodejs";
 
 import { logger } from "../../common/logger.js";
 import { env } from "../../config/env.js";
@@ -34,23 +34,29 @@ const statusRecipients: Partial<Record<ShipmentStatus, NotificationRecipientRole
 
 export class NotificationService {
   private readonly adminEmails: string[];
-  private readonly resend: Resend | null;
 
   constructor() {
     this.adminEmails = env.notificationAdminEmails;
-    this.resend = env.resendApiKey ? new Resend(env.resendApiKey) : null;
+
+    if (env.emailjsPublicKey) {
+      emailjs.init({
+        publicKey: env.emailjsPublicKey,
+        privateKey: env.emailjsPrivateKey,
+      });
+    }
 
     if (!this.isEmailConfigured()) {
       logger.warn("Notification email is disabled due to missing configuration", {
-        has_resend_key: Boolean(env.resendApiKey),
-        has_from_email: Boolean(env.notificationFromEmail),
+        has_service_id: Boolean(env.emailjsServiceId),
+        has_template_id: Boolean(env.emailjsTemplateId),
+        has_public_key: Boolean(env.emailjsPublicKey),
         admin_email_count: this.adminEmails.length,
       });
     }
   }
 
   private isEmailConfigured(): boolean {
-    return Boolean(env.resendApiKey && env.notificationFromEmail);
+    return Boolean(env.emailjsServiceId && env.emailjsTemplateId && env.emailjsPublicKey);
   }
 
   private async findUsersByRoles(roles: NotificationRecipientRoles): Promise<string[]> {
@@ -113,28 +119,20 @@ export class NotificationService {
     }
 
     try {
-      const response = await this.resend!.emails.send({
-        to: message.to,
-        from: env.notificationFromEmail as string,
-        subject: message.subject,
-        html: message.html,
-      });
-
-      if (response.error) {
-        logger.error("Notification email dispatch failed", {
-          event,
-          subject: message.subject,
-          recipients: message.to,
-          error: response.error,
-        });
-        return "failed";
-      }
+      await Promise.all(
+        message.to.map((recipient) =>
+          emailjs.send(env.emailjsServiceId!, env.emailjsTemplateId!, {
+            to_email: recipient,
+            subject: message.subject,
+            html_content: message.html,
+          }),
+        ),
+      );
 
       logger.info("Notification email dispatched", {
         event,
         subject: message.subject,
         recipients_count: message.to.length,
-        provider_message_id: response.data?.id,
       });
       return "sent";
     } catch (error) {
