@@ -92,32 +92,64 @@ export class NotificationService {
     return Array.from(deduped);
   }
 
-  private async sendEmail(message: NotificationEmailMessage): Promise<void> {
+  private async sendEmail(
+    event: string,
+    message: NotificationEmailMessage,
+  ): Promise<"sent" | "skipped_config" | "skipped_no_recipients" | "failed"> {
     if (!this.isEmailConfigured()) {
-      return;
+      logger.warn("Notification skipped: provider not configured", {
+        event,
+        subject: message.subject,
+      });
+      return "skipped_config";
     }
 
     if (message.to.length === 0) {
-      return;
+      logger.warn("Notification skipped: no recipients resolved", {
+        event,
+        subject: message.subject,
+      });
+      return "skipped_no_recipients";
     }
 
     try {
-      await this.resend!.emails.send({
+      const response = await this.resend!.emails.send({
         to: message.to,
         from: env.notificationFromEmail as string,
         subject: message.subject,
         html: message.html,
       });
+
+      if (response.error) {
+        logger.error("Notification email dispatch failed", {
+          event,
+          subject: message.subject,
+          recipients: message.to,
+          error: response.error,
+        });
+        return "failed";
+      }
+
+      logger.info("Notification email dispatched", {
+        event,
+        subject: message.subject,
+        recipients_count: message.to.length,
+        provider_message_id: response.data?.id,
+      });
+      return "sent";
     } catch (error) {
       logger.error("Notification email dispatch failed", {
+        event,
         subject: message.subject,
         recipients: message.to,
         error,
       });
+      return "failed";
     }
   }
 
   private async notifyByRoles(params: {
+    event: string;
     roles: NotificationRecipientRoles;
     subject: string;
     html: string;
@@ -126,13 +158,23 @@ export class NotificationService {
     try {
       const roleRecipients = await this.findUsersByRoles(params.roles);
       const recipients = this.uniqueRecipients(this.adminEmails, roleRecipients, params.extraRecipients);
-      await this.sendEmail({
+      const result = await this.sendEmail(params.event, {
         to: recipients,
         subject: params.subject,
         html: params.html,
       });
+      if (result !== "sent") {
+        logger.warn("Notification processing completed without successful send", {
+          event: params.event,
+          status: result,
+          roles: params.roles,
+          recipients_count: recipients.length,
+          subject: params.subject,
+        });
+      }
     } catch (error) {
       logger.error("Notification recipient resolution failed", {
+        event: params.event,
         subject: params.subject,
         roles: params.roles,
         error,
@@ -142,6 +184,7 @@ export class NotificationService {
 
   async notifyShipmentCreated(payload: ShipmentCreatedNotificationPayload): Promise<void> {
     await this.notifyByRoles({
+      event: "shipment_created",
       roles: ["admin", "trader"],
       subject: `Shipment ${payload.shipmentNumber} planned`,
       html: shipmentCreatedTemplate(payload),
@@ -151,10 +194,15 @@ export class NotificationService {
   async notifyShipmentStatusChanged(payload: ShipmentStatusNotificationPayload): Promise<void> {
     const roles = statusRecipients[payload.newStatus];
     if (!roles) {
+      logger.debug("Notification skipped: shipment status has no notification rule", {
+        event: "shipment_status_changed",
+        status: payload.newStatus,
+      });
       return;
     }
 
     await this.notifyByRoles({
+      event: "shipment_status_changed",
       roles,
       subject: `Shipment ${payload.shipmentNumber} is now ${payload.newStatus}`,
       html: shipmentStatusTemplate(payload),
@@ -163,6 +211,7 @@ export class NotificationService {
 
   async notifyDocumentsReady(payload: DocumentsReadyNotificationPayload): Promise<void> {
     await this.notifyByRoles({
+      event: "shipment_documents_ready",
       roles: ["admin", "compliance"],
       subject: `Documents ready for shipment ${payload.shipmentNumber}`,
       html: documentsReadyTemplate(payload),
@@ -171,6 +220,7 @@ export class NotificationService {
 
   async notifyContractCreated(payload: ContractCreatedNotificationPayload): Promise<void> {
     await this.notifyByRoles({
+      event: "contract_created",
       roles: ["admin", "trader"],
       subject: `New contract ${payload.contractNumber} created`,
       html: contractCreatedTemplate(payload),
@@ -179,6 +229,7 @@ export class NotificationService {
 
   async notifyContractFullyAllocated(payload: ContractFullyAllocatedNotificationPayload): Promise<void> {
     await this.notifyByRoles({
+      event: "contract_fully_allocated",
       roles: ["admin", "trader"],
       subject: `Contract ${payload.contractNumber} fully allocated`,
       html: contractFullyAllocatedTemplate(payload),
@@ -187,6 +238,7 @@ export class NotificationService {
 
   async notifyStockAdjusted(payload: StockAdjustedNotificationPayload): Promise<void> {
     await this.notifyByRoles({
+      event: "stock_adjusted",
       roles: ["admin", "warehouse"],
       subject: `Stock adjustment on lot ${payload.lotCode}`,
       html: stockAdjustedTemplate(payload),
@@ -195,6 +247,7 @@ export class NotificationService {
 
   async notifyContractRiskAlert(payload: ContractRiskAlertPayload): Promise<void> {
     await this.notifyByRoles({
+      event: "contract_risk_alert",
       roles: ["admin", "trader"],
       subject: `Risk alert: contract ${payload.contractNumber} has ${Math.round(payload.unallocatedKg)} kg unallocated`,
       html: contractRiskTemplate(payload),
@@ -203,6 +256,7 @@ export class NotificationService {
 
   async notifyApiKeyExpiring(payload: ApiKeyExpiryAlertPayload): Promise<void> {
     await this.notifyByRoles({
+      event: "api_key_expiring",
       roles: ["admin"],
       extraRecipients: [payload.ownerEmail],
       subject: `API key ${payload.keyName} expires in ${payload.daysToExpiry} day(s)`,

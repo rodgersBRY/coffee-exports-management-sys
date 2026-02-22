@@ -127,7 +127,7 @@ Versioned endpoints are served under `/api/v1/*`.
 
 Set these in `.env` to enable email notifications and daily alerts:
 
-- `SENDGRID_API_KEY`
+- `RESEND_API_KEY`
 - `NOTIFICATION_FROM_EMAIL`
 - `NOTIFICATION_ADMIN_EMAILS` (comma-separated)
 - `NOTIFICATIONS_CRON_ENABLED` (`true`/`false`)
