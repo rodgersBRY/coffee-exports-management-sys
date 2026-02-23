@@ -12,8 +12,10 @@ COPY prisma.config.ts ./
 
 RUN npm ci
 
-# Generate Prisma client for the current schema
-RUN npx prisma generate
+# Generate Prisma client for the current schema.
+# prisma.config.ts calls env("DATABASE_URL") eagerly, so a placeholder is
+# required here — prisma generate never connects to the database.
+RUN DATABASE_URL=postgresql://build:build@localhost/build npx prisma generate
 
 COPY tsconfig.json ./
 COPY src ./src/
